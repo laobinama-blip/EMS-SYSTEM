@@ -26,36 +26,35 @@
   - [x] 新增 `design-review.md`，明确同意最新设计方向、执行约束和进入开发前确认条件。
   - [x] 复核最新 Git 设计文档，修正作业效率页布局描述和长页面截图验收口径。
 
-- [ ] **T5: 前端工程骨架搭建**
-  - [ ] 等待用户确认文档后再开始。
-  - [ ] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。
-  - [ ] 创建 `ems-frontend` (Vite/React/TypeScript) 项目骨架。
-  - [ ] 配置 TypeScript、基础脚本、Recharts、Axios 或 Fetch 封装等依赖。
-  - [ ] 配置 Vite proxy，将 `/api` 指向 `http://10.105.64.36:20003/api`。
-  - [ ] 实现全局布局与筛选栏 `AppShell` / `FilterBar`。
+- [x] **T5: 前端工程骨架搭建**
+  - [x] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。
+  - [x] 创建 `ems-frontend` (Vite/React/TypeScript) 项目骨架。
+  - [x] 配置 TypeScript、基础脚本、Recharts、lucide-react、clsx 等依赖。
+  - [x] 实现全局布局与筛选栏 `AppShell` / `FilterBar`。
 
-- [ ] **T6: 前端接口适配与 mock 数据源**
+- [/] **T6: 前端接口适配与 mock 数据源**
   - [ ] 实现 `apiClient`，兼容真实接口 direct body 与 mock envelope `{ code, message, data }`。
   - [ ] 优先接入 `/api/kpi/energy/*` 真实接口。
-  - [ ] 为 common、efficiency、network、dispatch、time-of-use-electricity 和调度前后对比字段提供前端 fixtures。
-  - [ ] 对官方文档中 `externalTruck` 当前固定空数组的问题进行 mock 标示。
+  - [x] 为 common、efficiency、network、dispatch、time-of-use-electricity 和调度前后对比字段提供首版前端 fixtures。
+  - [x] 对官方文档中 `externalTruck` 当前固定空数组的问题进行 mock 标示。
 
-- [ ] **T7: 前端全局框架与基础组件**
-  - [ ] 严格按 `frontend-fidelity-spec.md` 建立 design tokens。
-  - [ ] 编写贴近原型的浅色设计系统，不使用深色 glassmorphism 主题。
-  - [ ] 实现 `AppShell` 顶部导航、告警胶囊、通知按钮和头像。
+- [x] **T7: 前端全局框架与基础组件**
+  - [x] 严格按 `frontend-fidelity-spec.md` 建立 design tokens。
+  - [x] 编写贴近原型的浅色设计系统，不使用深色 glassmorphism 主题。
+  - [x] 实现 `AppShell` 顶部导航、告警胶囊、通知按钮和头像。
 
-- [ ] **T8: 四个看板视图开发**
-  - [ ] 作业效率：实现作业统计、能耗、效率、设备模块和 5 张折线/柱状图表。
-  - [ ] 关系网：SVG 拓扑画布，节点和连线支持悬停/点击反馈。
-  - [ ] 调度分析：算法效率、Hymala 稳定性和二次调度事件时间轴。
-  - [ ] 能源与碳排：单箱能耗/成本/碳排、趋势、传统电力 vs 绿电、分时电价、百公里能耗表。
+- [x] **T8: 四个看板视图开发**
+  - [x] 作业效率：实现作业统计、能耗、效率、设备模块和 5 张折线/柱状图表。
+  - [x] 关系网：SVG 拓扑画布，节点和连线支持悬停/点击反馈。
+  - [x] 调度分析：算法效率、Hymala 稳定性和二次调度事件时间轴。
+  - [x] 能源与碳排：单箱能耗/成本/碳排、趋势、传统电力 vs 绿电、分时电价、百公里能耗表。
 
 - [ ] **T9: 高保真视觉门禁截图比对**
   - [ ] 浏览器截图与 `EMS1.png` - `EMS4.png` 进行对照。
   - [ ] 输出差异清单，每页至少覆盖 8 个核对点，并逐项微调 CSS 边距、颜色和字重，确保 100% 贴合原型。
 
 - [ ] **T10: 最终编译构建与交付验证**
-  - [ ] 前端 `npm run typecheck` 与 `npm run build` 成功通过。
+  - [x] 前端 `npm run typecheck` 与 `npm run build` 成功通过。
+  - [x] 前端 `npm run lint` 成功通过。
   - [ ] 启动前端并进行运行时烟雾测试，验证真实接口降级逻辑。
   - [ ] 将完整代码与 walkthrough 报告 Push 并归档。
