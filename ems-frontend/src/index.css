@@ -1,0 +1,679 @@
+/* EMS KPI Dashboard Design System - index.css */
+/* Light Industrial style strictly matching prototypes */
+
+:root {
+  --bg-color: #f4f6fa;
+  --card-bg: #ffffff;
+  --card-border: #dfe3ea;
+  --border-color: #e2e8f0;
+  
+  --text-main: #1d2129;
+  --text-sub: #5f6672;
+  --text-light: #86909c;
+  
+  /* Interactive elements */
+  --blue-main: #35b9f6;
+  --blue-hover: #1aa3e2;
+  --blue-active: #0c8ecb;
+  --blue-light: #e6f7ff;
+  
+  /* Dual-series indicators */
+  --green-dispatch: #19d98f;
+  --green-dispatch-bg: rgba(25, 217, 143, 0.08);
+  --grey-dispatch: #858c8c;
+  --grey-dispatch-bg: rgba(133, 140, 140, 0.08);
+  
+  /* Alert styling */
+  --red-border: #ff6262;
+  --red-bg: #fff2f0;
+  --red-text: #ff4d4f;
+  
+  /* SVG topology node colors */
+  --node-ship: #1890ff;
+  --node-qc: #096dd9;
+  --node-vehicle: #19d98f;
+  --node-yc: #722ed1;
+  --node-block: #8c8c8c;
+  --node-charging: #fa8c16;
+  --node-swapping: #13c2c2;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f3f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c7d0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1aab2;
+}
+
+/* AppShell Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.5px;
+}
+
+.logo-text span {
+  color: var(--text-light);
+  font-weight: 400;
+  margin: 0 4px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+  color: var(--text-sub);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+}
+
+.nav-tab.active {
+  color: var(--text-main);
+  font-weight: 700;
+  border-bottom-color: var(--text-main);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Alert Capsule */
+.alert-capsule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--red-bg);
+  border: 1px solid var(--red-border);
+  color: var(--red-text);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.round-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--card-border);
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.round-btn:hover {
+  border-color: var(--text-light);
+  color: var(--text-main);
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: var(--red-text);
+  color: #ffffff;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.user-profile {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1890ff, #19d98f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Global Filter Bar */
+.filter-bar-container {
+  padding: 16px 24px 0 24px;
+}
+
+.filter-bar {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 30px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.filter-left, .filter-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Segmented Control */
+.segmented-control {
+  display: flex;
+  background-color: #f1f3f5;
+  padding: 3px;
+  border-radius: 20px;
+}
+
+.segment-btn {
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sub);
+  padding: 6px 16px;
+  border-radius: 17px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.segment-btn.active {
+  background-color: #ffffff;
+  color: var(--text-main);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Date Range Picker style */
+.date-picker-wrap {
+  display: flex;
+  align-items: center;
+  background-color: #f1f3f5;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-sub);
+  gap: 6px;
+}
+
+.date-input {
+  border: none;
+  background: none;
+  font-size: 12px;
+  color: var(--text-main);
+  outline: none;
+  width: 140px;
+}
+
+/* Custom Select */
+.filter-select {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text-sub);
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: var(--blue-main);
+}
+
+/* Primary Action Buttons */
+.btn-query {
+  background-color: var(--blue-main);
+  color: #ffffff;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-query:hover {
+  background-color: var(--blue-hover);
+}
+
+.btn-query:active {
+  background-color: var(--blue-active);
+}
+
+.btn-reset {
+  background-color: #ffffff;
+  color: var(--text-sub);
+  border: 1px solid var(--card-border);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-reset:hover {
+  border-color: var(--text-light);
+  color: var(--text-main);
+}
+
+/* Main Dashboard Panels */
+.main-content {
+  flex: 1;
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
+}
+
+.kpi-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Metric Widgets */
+.metric-value-large {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.metric-unit {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 4px;
+}
+
+/* Segmented Custom Stacked Bars */
+.stacked-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stacked-bar-segment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stacked-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.stacked-bar-label {
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.stacked-bar-value {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.stacked-bar-track {
+  height: 16px;
+  background-color: #f1f3f5;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.stacked-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Colors for segments in Stacked Bar */
+.fill-diesel { background-color: #fa8c16; }
+.fill-coal { background-color: #8c8c8c; }
+.fill-green { background-color: #19d98f; }
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+/* Topology SVG graph layout */
+.svg-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  background-color: #f4f6fa;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+/* Dot grid background pattern in SVG */
+.dot-grid {
+  fill: url(#grid-dots);
+}
+
+.node-group {
+  cursor: pointer;
+}
+
+.node-circle {
+  transition: r 0.2s ease, stroke-width 0.2s ease;
+}
+
+.node-group:hover .node-circle {
+  r: 26;
+  stroke-width: 3px;
+}
+
+.node-text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--text-main);
+  text-anchor: middle;
+}
+
+.edge-line {
+  stroke-width: 1.5;
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.edge-line.active {
+  stroke: var(--green-dispatch);
+  stroke-width: 2.5;
+}
+
+.edge-line.dashed {
+  stroke-dasharray: 4 4;
+}
+
+.edge-line.highlighted {
+  stroke: var(--blue-main);
+  stroke-width: 3;
+}
+
+/* Secondary Dispatch Timeline Gantt Chart */
+.gantt-container {
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.gantt-axis {
+  display: flex;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.gantt-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.gantt-row {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.gantt-row-header {
+  width: 120px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-sub);
+  flex-shrink: 0;
+}
+
+.gantt-events-track {
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+.gantt-event-capsule {
+  position: absolute;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gantt-event-capsule:hover {
+  transform: scaleY(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Gantt Colors */
+.gantt-ear { background-color: #ff9c6e; } /* Orange */
+.gantt-reset { background-color: #ffc069; } /* Yellow */
+.gantt-exit { background-color: #5cdbd3; } /* Teal */
+.gantt-block { background-color: #ff7875; } /* Light Red */
+
+/* Table styles */
+.ems-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.ems-table th {
+  background-color: #f8f9fa;
+  color: var(--text-sub);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.ems-table td {
+  padding: 12px;
+  font-size: 12px;
+  border-bottom: 1px solid #f1f3f5;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.ems-table tr:hover td {
+  background-color: #f8f9fc;
+}
+
+/* Trend Arrow indicators */
+.trend-arrow {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.trend-up {
+  color: var(--red-text);
+}
+
+.trend-down {
+  color: var(--green-dispatch);
+}
+
+/* Tooltips */
+.chart-tooltip {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-main);
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+/* Utility layout grids */
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.grid-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.grid-4col {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr;
+  gap: 20px;
+}
+
+.layout-split-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Loader indicator */
+.spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  width: 100%;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(53, 185, 246, 0.1);
+  border-top-color: var(--blue-main);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
