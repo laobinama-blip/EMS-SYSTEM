@@ -1,30 +1,65 @@
 # EMS KPI Dashboard Proposal
 
-## 背景
-基于 4 张 Reewell World KPI 原型图开发 EMS 前后端分离系统。当前仅提供能源与碳排页面相关接口文档，其余页面需要先识别接口缺口，并在工程中以 mock/API adapter 方式隔离，便于后续联调替换。
+## 1. Background
+The goal is to develop a front-end and back-end separated Energy Management System (EMS) dashboard based on four high-fidelity prototype wireframe pages (Operational Efficiency, Relationship Network, Dispatch Analysis, Energy & Carbon Emission). 
 
-## 范围
-- 实现四个一级页面：作业效率、关系网、调度分析、能源与碳排。
-- 实现统一顶部导航、告警、时间筛选条、查询/重置交互。
-- 后端提供本地 API，能源接口按文档路径对齐；缺口接口以 `/api/kpi/efficiency/*`、`/api/kpi/network/*`、`/api/kpi/dispatch/*` 临时命名。
-- 前端通过服务层访问后端，不直接读静态数据。
+Currently, formal backend documentation ([02_第三页_能源与碳排接口与表结构梳理.md](file:///c:/Antigravity/EMS/02_第三页_能源与碳排接口与表结构梳理.md)) covers only the Energy & Carbon page. This proposal outlines the setup of an integrated development framework where the missing components are isolated using an Express API adapter/mock layer, enabling parallel development of the interactive elements and facilitating seamless production integration later.
 
-## 范围外
-- 不连接生产数据库、Influx、真实认证和权限系统。
-- 不实现真实调度算法、Hymala 模型调用或实时告警推送。
-- 不发布生产环境。
+---
 
-## 风险
-- 能源接口文档仅覆盖能源与碳排页面，且部分字段无法直接支撑“调度前/调度后”双曲线和分时电价表。
-- 原型为 1920px 宽桌面视图，移动端需要合理降级为横向滚动/单列栈。
-- 图表视觉需要接近原型，但本阶段以可交互开发版为目标。
+## 2. Project Scope
 
-## 回滚计划
-本变更新建 `C:\Codex\ems-system`，不修改现有项目。若需回滚，可删除该目录或停止本地服务。
+### Frontend Dashboard
+- Implement a unified dashboard container (`AppShell`) featuring the Reewell brand header, top tab navigation, notification drawer, and active alert systems (e.g., "QC301 efficiency alert").
+- Implement a global `FilterBar` that manages filter states (2h, 8h, 1d, 3d, 7d, Custom Date Range, and device selection) and triggers component updates on Query/Reset.
+- Implement four interactive dashboard views:
+  1. **作业效率 (Operational Efficiency):** Display statistics cards (TEU, cycles, etc.) and five analytical charts (efficiency, empty rate, crane/bridge rates, etc.).
+  2. **关系网 (Relationship Network):** Create an interactive SVG-based force-directed node-link graph visualizing cranes, vehicles, blocks, and charging stations with real-time assignment visual connections.
+  3. **调度分析 (Dispatch Analysis):** Display algorithm improvement curves, Hymala stability trends, and a horizontal timeline visualizing job execution events.
+  4. **能源与碳排 (Energy and Carbon Emission):** Real-time energy, cost, and carbon breakdown cards, line charts (energy trend, green power ratio), time-of-use cost matrices, and vehicle performance lists.
 
-## 验收
-- 四个页面可通过顶部导航切换。
-- 时间筛选、设备筛选、查询/重置具备本地状态反馈。
-- 后端接口可独立启动，前端通过代理或环境变量访问。
-- 能源与碳排页面调用路径与已给接口文档保持一致。
-- 缺失接口在 `api-gap-analysis.md` 中明确列出。
+### Backend Mock Server
+- Set up a Node.js Express server configured with TypeScript that serves all backend endpoints.
+- Align the Energy & Carbon endpoints exactly with the provided documentation paths.
+- Provision simulated REST endpoints under `/api/kpi/efficiency/*`, `/api/kpi/network/*`, and `/api/kpi/dispatch/*` to return realistic operational statistics.
+- Provide a Swagger documentation view for API inspection.
+
+---
+
+## 3. Out of Scope
+- Integration with real, active production databases (PostgreSQL or InfluxDB clusters).
+- Deployment of actual dispatch optimization models or Hymala World model code.
+- User authentication, role-based access control, or live webhook alert triggers.
+- Deployment to staging/production cloud servers.
+
+---
+
+## 4. Architectural Decisions
+- **Frontend Stack:** React 19 + TypeScript + Vite + Vanilla CSS. Using CSS custom properties and HSL-based colors to implement a modern, premium glassmorphic dark theme (`#0b0f19`).
+- **Charting Control:** Recharts for premium, responsive charts and SVG elements for the custom force-directed graph.
+- **Backend Stack:** Express + TypeScript + ts-node. In-memory data simulator representing postgres/influx tables, maintaining data relationships and applying formulas.
+
+---
+
+## 5. Risks & Mitigation
+
+| Risk | Impact | Mitigation |
+| :--- | :--- | :--- |
+| **API Gaps in Documentation** | High | Design mock API models containing the necessary before/after comparison fields and time-of-use tables. |
+| **High Resolution UI Constraints** | Medium | Implement elastic grid layouts and flex components, allowing horizontal scrolling or single-column stack layout on lower desktop widths. |
+| **Interactive Graph Performance** | Medium | Build using optimized React-SVG nodes rather than heavy external canvas libraries to keep load speeds fast. |
+
+---
+
+## 6. Rollback Plan
+All changes are self-contained inside the [EMS](file:///c:/Antigravity/EMS) workspace. No modifications are made to external system components. To roll back, simply terminate the node/react local processes and delete the project folder or discard git modifications.
+
+---
+
+## 7. Acceptance Criteria
+- Top navigation tabs allow switching between the four views without layout shifts.
+- Global filter bar inputs trigger data refetches on click and clear on reset.
+- Chart legends, tooltip states, and hover effects function fluidly.
+- Network graph nodes and edges render correctly with colored status highlights.
+- The Energy & Carbon page consumes APIs matching the official backend specification.
+- `npm run typecheck` and `npm run build` pass without warnings.

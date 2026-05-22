@@ -1,9 +1,30 @@
-# Tasks
+# EMS KPI Dashboard Tasks
 
-- [x] T1 读取接口文档和四张原型图。
-- [x] T2 形成页面/API 覆盖与缺口分析。
-- [ ] T3 创建前后端分离工程骨架。
-- [ ] T4 实现后端 API adapter 和 mock 数据。
-- [ ] T5 实现统一 Shell、筛选条和页面路由。
-- [ ] T6 实现作业效率、关系网、调度分析、能源与碳排四页。
-- [ ] T7 运行 typecheck/build 和浏览器视觉烟测。
+- [x] **T1: Discovery & Analysis**
+  - Read interface document and four prototype wireframes.
+  - Sync docs from the remote Git repository.
+- [x] **T2: Gap & OpenSpec Alignment**
+  - Form page/API coverage matrix and identify critical gaps.
+  - Combine plan, proposal, specs, harness gates, and gap documents with custom design parameters.
+- [ ] **T3: API Specification**
+  - Create the `openapi.yaml` OpenAPI 3.1.0 document.
+- [ ] **T4: Engineering Scaffolding**
+  - Bootstrap Node.js/Express TypeScript backend in `ems-backend`.
+  - Bootstrap Vite/React TypeScript frontend in `ems-frontend`.
+  - Configure package tasks, CORS, Axios, and route structures.
+- [ ] **T5: Mock Backend Implementation**
+  - Write mock data services representing postgres/influx schemas.
+  - Implement formulas for TEU, energy cost, carbon footprint, and time-of-use pricing.
+  - Serve all 11 endpoints with correct schemas.
+- [ ] **T6: Frontend Core & AppShell**
+  - Set up global HSL-based dark theme styling, variables, and typography.
+  - Implement navigation header, global FilterBar, and container widgets.
+- [ ] **T7: Frontend Views & Chart Integrations**
+  - Build **作业效率 (Operational Efficiency)** tab with summary cards and five Recharts views.
+  - Build **关系网 (Relationship Network)** tab with interactive SVG force-directed node-link graph.
+  - Build **调度分析 (Dispatch Analysis)** tab with algorithm comparison, Hymala stability, and timeline Gantt events.
+  - Build **能源与碳排 (Energy and Carbon)** tab with single-box stacked bars, trend lines, time-of-use grid, and vehicle table.
+- [ ] **T8: Verification & Harness Check**
+  - Execute compilation and type checks (`npm run typecheck` / `npm run build`).
+  - Run smoke tests in local browser to verify pages, filters, and tooltips.
+  - Push documentation updates back to Git repository.
