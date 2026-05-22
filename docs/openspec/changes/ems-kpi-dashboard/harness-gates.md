@@ -9,10 +9,11 @@
 - **验证项**：
   1. `proposal.md`、`spec.md`、`plan.md`、`tasks.md`、`api-gap-analysis.md` 已更新。
   2. `frontend-fidelity-spec.md` 已补充，并明确四页视觉、布局和交互细节。
-  3. 视觉方向明确为四张原型图的浅色工业 KPI 看板，不采用深色 glassmorphism。
-  4. `openapi.yaml` 覆盖官方能源接口和新增 mock/扩展接口。
-  5. 扩展接口/字段与官方接口边界清晰。
-  6. 用户确认文档前不得进入前端编码实现。
+  3. `design-review.md` 已补充，并明确是否同意最新设计、设计边界和开发前确认条件。
+  4. 视觉方向明确为四张原型图的浅色工业 KPI 看板，不采用深色 glassmorphism。
+  5. `openapi.yaml` 覆盖官方能源接口和新增 mock/扩展接口。
+  6. 扩展接口/字段与官方接口边界清晰。
+  7. 用户确认文档前不得进入前端编码实现。
 
 ---
 

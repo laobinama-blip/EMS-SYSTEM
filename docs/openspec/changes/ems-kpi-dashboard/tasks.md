@@ -12,7 +12,7 @@
 - [x] **T3: 最新方案复核与视觉基准对齐**
   - [x] 基于 GitHub 最新文档重新复核方案。
   - [x] 修正深色 glassmorphism 与原型浅色界面冲突的问题。
-  - [x] 复制 `EMS1.png` - `EMS4.png` 到本地 Artifact 目录，作为最终高保真对齐源。
+  - [x] 确认 `EMS1.png` - `EMS4.png` 作为最终高保真对齐源。
   - [x] 增补前端高保真设计门禁。
 
 - [x] **T4: API 契约与标准设计**
@@ -23,27 +23,29 @@
 - [x] **T4.5: 前端高保真与交互规范补充**
   - [x] 新增 `frontend-fidelity-spec.md`，逐页定义视觉布局、组件细节和交互流程。
   - [x] 明确当前阶段先不依赖接口，优先用 fixtures 保证四页完整还原。
+  - [x] 新增 `design-review.md`，明确同意最新设计方向、执行约束和进入开发前确认条件。
 
-- [/] **T5: 前端工程骨架搭建**
-  - [x] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。
-  - [x] 创建 `ems-frontend` (Vite/React/TypeScript) 项目骨架。
-  - [x] 配置 TypeScript、基础脚本、Recharts、Axios 或 Fetch 封装等依赖。
-  - [x] 配置 Vite proxy，将 `/api` 指向 `http://10.105.64.36:20003/api`。
-  - [x] 实现并编写全局布局筛选栏 `FilterBar.tsx`。
+- [ ] **T5: 前端工程骨架搭建**
+  - [ ] 等待用户确认文档后再开始。
+  - [ ] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。
+  - [ ] 创建 `ems-frontend` (Vite/React/TypeScript) 项目骨架。
+  - [ ] 配置 TypeScript、基础脚本、Recharts、Axios 或 Fetch 封装等依赖。
+  - [ ] 配置 Vite proxy，将 `/api` 指向 `http://10.105.64.36:20003/api`。
+  - [ ] 实现全局布局与筛选栏 `AppShell` / `FilterBar`。
 
-- [/] **T6: 前端接口适配与 mock 数据源**
-  - [x] 实现 `apiClient`，兼容真实接口 direct body 与 mock envelope `{ code, message, data }`。
-  - [x] 优先接入 `/api/kpi/energy/*` 真实接口。
-  - [x] 为 common、efficiency、network、dispatch、time-of-use-electricity 和调度前后对比字段提供前端 fixtures。
-  - [x] 对官方文档中 `externalTruck` 当前固定空数组的问题进行 mock 标示。
+- [ ] **T6: 前端接口适配与 mock 数据源**
+  - [ ] 实现 `apiClient`，兼容真实接口 direct body 与 mock envelope `{ code, message, data }`。
+  - [ ] 优先接入 `/api/kpi/energy/*` 真实接口。
+  - [ ] 为 common、efficiency、network、dispatch、time-of-use-electricity 和调度前后对比字段提供前端 fixtures。
+  - [ ] 对官方文档中 `externalTruck` 当前固定空数组的问题进行 mock 标示。
 
 - [ ] **T7: 前端全局框架与基础组件**
   - [ ] 严格按 `frontend-fidelity-spec.md` 建立 design tokens。
   - [ ] 编写贴近原型的浅色设计系统，不使用深色 glassmorphism 主题。
   - [ ] 实现 `AppShell` 顶部导航、告警胶囊、通知按钮和头像。
 
-- [/] **T8: 四个看板视图开发**
-  - [/] 作业效率：实现作业统计、能耗、效率、设备模块和 5 张折线/柱状图表。
+- [ ] **T8: 四个看板视图开发**
+  - [ ] 作业效率：实现作业统计、能耗、效率、设备模块和 5 张折线/柱状图表。
   - [ ] 关系网：SVG 拓扑画布，节点和连线支持悬停/点击反馈。
   - [ ] 调度分析：算法效率、Hymala 稳定性和二次调度事件时间轴。
   - [ ] 能源与碳排：单箱能耗/成本/碳排、趋势、传统电力 vs 绿电、分时电价、百公里能耗表。
