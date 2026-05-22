@@ -1,6 +1,6 @@
 # EMS KPI 看板项目实施计划 (Implementation Plan)
 
-本计划基于 4 张原型图、已上传的能源与碳排接口文档，以及 2026-05-22 复核结论更新。结论：总体方向同意，但必须按本版修正后再进入开发。
+本计划基于 4 张原型图、已上传的能源与碳排接口文档，以及 2026-05-22 复核结论更新。结论：总体方向同意，但必须按本版修正后再进入开发。前端必须以原型为高保真设计源。
 
 ---
 
@@ -10,21 +10,21 @@
 
 ```
 EMS-SYSTEM/
-├── openapi.yaml                 # OpenAPI 3.1.0 接口契约
-├── ems-backend/                 # Node.js + Express + TypeScript mock/API adapter
+├── openapi.yaml
+├── ems-backend/
 │   ├── src/
-│   │   ├── controllers/         # 路由控制器
-│   │   ├── services/            # mock 数据、聚合口径、计算公式
-│   │   ├── config/              # 单价、碳排系数、设备枚举、分时电价配置
-│   │   └── server.ts            # Express 启动入口与 Swagger 路由
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── config/
+│   │   └── server.ts
 │   ├── tsconfig.json
 │   └── package.json
-└── ems-frontend/                # Vite + React + TypeScript 前端看板
+└── ems-frontend/
     ├── src/
-    │   ├── components/          # AppShell, FilterBar, MetricCard, charts
-    │   ├── pages/               # Efficiency, Network, Dispatch, Energy
-    │   ├── services/            # apiClient 与接口类型
-    │   ├── index.css            # 原型浅色设计系统
+    │   ├── components/
+    │   ├── pages/
+    │   ├── services/
+    │   ├── index.css
     │   ├── App.tsx
     │   └── main.tsx
     ├── tsconfig.json
@@ -33,16 +33,18 @@ EMS-SYSTEM/
 
 ---
 
-## 2. 设计系统与视觉规范 (Design System)
+## 2. 高保真设计系统与视觉规范
 
 原型图是浅色工业 KPI 看板，不采用深色 glassmorphism 主题。实现必须贴近原型：
 
 - **页面背景**：浅灰 `#f1f3f7` / `#f4f6fa`。
 - **顶部栏**：白色、细边框、横向 Tab 导航，选中态为黑色底部粗线。
-- **卡片容器**：白色或近白色背景，8-16px 圆角，浅灰边框，轻阴影，不使用大面积深色毛玻璃。
-- **主色**：调度后/正向使用亮绿色 `#18d88a`，调度前使用中性灰 `#8a8f93`，查询按钮使用亮蓝 `#2fbaf4`，告警使用红色描边和浅红底。
-- **字体**：优先使用系统无衬线字体栈，避免依赖外网 Google Fonts；数字指标使用清晰中等字重。
-- **布局密度**：以 1920px 原型为主要验收视口，移动端只做合理降级，不作为首版核心验收。
+- **筛选条**：白色大圆角容器，浅灰分段按钮，选中项为白色胶囊并带轻阴影；查询按钮为亮蓝色。
+- **卡片容器**：白色或近白背景，8-16px 圆角，浅灰边框，轻阴影；不使用大面积深色毛玻璃。
+- **图表样式**：调度后使用亮绿色 `#18d88a`，调度前使用中性灰 `#8a8f93`；虚线网格、轻量坐标轴、紧凑图例、白色 tooltip。
+- **告警样式**：红色描边、浅红背景、左侧告警图标，与原型右上角胶囊一致。
+- **字体与密度**：使用系统无衬线字体栈；指标数字清晰中等字重；以 1920px 原型为主验收视口。
+- **高保真验收**：每个页面完成后必须用浏览器截图与对应原型对照，记录至少 5 个核对点：布局、颜色、字体、卡片、图表/拓扑/时间轴。
 
 ---
 
@@ -50,9 +52,9 @@ EMS-SYSTEM/
 
 - 能源与碳排官方接口路径必须保留 `/api/kpi/energy/*`。
 - 缺失接口按 `api-gap-analysis.md` 定义补齐 mock 路径，包括 common、efficiency、network、dispatch 和 time-of-use-electricity。
-- OpenAPI 需覆盖官方 10 个能源接口和新增 mock/扩展接口；不要再写死“11 个接口”。
+- OpenAPI 需覆盖官方 10 个能源接口和新增 mock/扩展接口；不要写死“11 个接口”。
 - Mock 服务可统一返回 `{ code, message, data }`，但前端 `apiClient` 必须兼容真实服务可能直接返回 body 的情况。
-- `energy-trend` 与 `vehicle-energy-per-100km` 的“调度前/调度后”字段是扩展字段，必须在 OpenAPI 中标记为 EMS 看板扩展，不假装官方文档已有。
+- `energy-trend` 与 `vehicle-energy-per-100km` 的“调度前/调度后”字段是 EMS 看板扩展字段，必须在 OpenAPI 中标注。
 
 ---
 
