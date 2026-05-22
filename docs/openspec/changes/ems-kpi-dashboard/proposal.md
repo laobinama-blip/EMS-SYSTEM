@@ -1,7 +1,7 @@
 # EMS KPI 看板项目建议书 (Proposal)
 
 ## 1. 项目背景
-本项目旨在基于 4 张高保真原型图开发一套前后端分离的能源管理系统 (EMS) KPI 监控看板。当前正式后端接口文档仅覆盖《能源与碳排》页面，其他页面接口需要通过 Express mock/API adapter 隔离补齐，便于前端开发和后续生产接口替换。
+本项目旨在基于 4 张高保真原型图开发一套前端优先的能源管理系统 (EMS) KPI 监控看板。当前正式后端接口文档仅覆盖《能源与碳排》页面，其他页面接口需要通过前端 mock adapter / fixtures 隔离补齐，便于前端开发和后续生产接口替换。
 
 本项目的前端实现必须以原型图为设计源，不允许改成其他视觉风格。后续开发按“高保真复刻业务看板”验收，而不是仅实现功能可用。
 
@@ -19,11 +19,11 @@
   3. **调度分析**：算法效率提升曲线、Hymala 稳定性曲线、指标卡和二次调度事件时间轴。
   4. **能源与碳排**：单箱能耗/成本/碳排、能耗趋势、传统电力 vs 绿电、分时电价、单车百公里能耗表。
 
-### 后端模拟服务 (`ems-backend`)
-- 使用 Node.js + Express + TypeScript 搭建 mock/API adapter。
+### 接口适配 (`apiClient` + frontend mocks)
+- 首期不在本仓库开发生产后端，也不强制创建 Node/Express mock 服务。
 - 能源与碳排页面的官方接口路径必须保持 `/api/kpi/energy/*`，并与《02_第三页_能源与碳排接口与表结构梳理.md》对齐。
-- 作业效率、关系网、调度分析等缺失模块使用 `/api/kpi/efficiency/*`、`/api/kpi/network/*`、`/api/kpi/dispatch/*` 等 mock API。
-- 使用 Swagger/OpenAPI 提供接口契约，明确哪些字段是官方接口字段，哪些字段是 EMS 看板扩展字段。
+- 作业效率、关系网、调度分析等缺失模块先使用前端 fixtures 输出与 `/api/kpi/efficiency/*`、`/api/kpi/network/*`、`/api/kpi/dispatch/*` 契约一致的数据。
+- 使用 `openapi.yaml` 明确哪些字段是官方接口字段，哪些字段是 EMS 看板扩展字段。
 
 ---
 
@@ -39,7 +39,7 @@
 - **前端技术栈**：React + TypeScript + Vite + Vanilla CSS。
 - **视觉方向**：严格采用原型图的浅色看板风格，禁止使用与原型冲突的深色 glassmorphism 主题。
 - **图表库**：Recharts 用于折线图/柱状图，原生 SVG 用于关系网和时间轴。
-- **后端技术栈**：Express + TypeScript。使用内存 mock 数据和可替换 service 层模拟 WI 快照表、能耗事实表、车辆时序数据和配置表。
+- **接口策略**：真实接口优先，前端 mock adapter 补齐缺口。后续若后端提供缺失接口，只替换数据源，不重做页面。
 
 ---
 

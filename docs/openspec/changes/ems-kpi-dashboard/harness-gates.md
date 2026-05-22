@@ -17,20 +17,19 @@
 ## 门禁 2: 代码质量 (Gate 2: Code Quality)
 - **要求**：代码无编译错误，前端可成功生产构建。
 - **验证项**：
-  1. `ems-backend` 运行 `npm run typecheck` 通过。
-  2. `ems-frontend` 运行 `npm run typecheck` 通过。
-  3. `ems-frontend` 运行 `npm run build` 通过。
-  4. 无未使用导入、明显调试代码、隐式 `any` 或阻塞性构建警告。
+  1. `ems-frontend` 运行 `npm run typecheck` 通过。
+  2. `ems-frontend` 运行 `npm run build` 通过。
+  3. 无未使用导入、明显调试代码、隐式 `any` 或阻塞性构建警告。
 
 ---
 
 ## 门禁 3: 运行时烟雾测试 (Gate 3: Runtime Smoke Tests)
-- **要求**：前后端可独立运行，API 通讯链路畅通。
+- **要求**：前端可独立运行，真实能源接口或前端 mock adapter 通讯链路畅通。
 - **验证项**：
-  1. 后端在 `20003` 端口启动，`/api/health` 返回健康状态。
-  2. Swagger/OpenAPI 页面可访问。
-  3. 前端在 `5173` 启动，并通过代理请求 `/api/kpi/*`。
-  4. 能源与碳排页面请求路径严格对齐 `/api/kpi/energy/*`。
+  1. 前端在 `5173` 启动。
+  2. 能源与碳排页面请求路径严格对齐 `/api/kpi/energy/*`。
+  3. 真实服务可访问时，前端通过代理调用 `http://10.105.64.36:20003/api`。
+  4. 真实服务不可访问或接口缺失时，前端 mock adapter 能返回页面所需数据，页面不崩溃。
 
 ---
 

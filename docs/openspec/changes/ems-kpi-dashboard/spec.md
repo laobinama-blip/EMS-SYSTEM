@@ -1,10 +1,10 @@
 # EMS KPI 看板技术规格说明书 (Specification)
 
 ## 需求 1: 应用程序架构
-系统 MUST 以 React 前端与 Node.js Express 后端解耦的前后端分离架构运行。
+系统 MUST 以前端优先的前后端分离架构运行：React 前端通过 HTTP 调用真实接口，真实接口缺失的数据由前端 mock adapter / fixtures 临时补齐。
 
 ### 验收标准
-- **Given** 后端 mock/API adapter 已启动；**When** 前端加载页面或点击查询；**Then** 所有统计数据与图表数据必须通过 HTTP 请求拉取，请求前缀为 `/api/kpi/*`。
+- **Given** 前端页面加载或点击查询；**When** 数据源可访问；**Then** 能源官方接口优先通过 HTTP 请求 `/api/kpi/energy/*` 拉取，缺失模块通过前端 mock adapter 返回与 `/api/kpi/*` 契约一致的数据模型。
 - **Given** `AppShell` 已渲染；**When** 用户点击顶部导航页签；**Then** 主内容区切换到对应页面，导航选中态同步更新。
 
 ---
@@ -71,6 +71,6 @@
 项目 MUST 包含可重复执行的类型检查、构建和视觉验收流程。
 
 ### 验收标准
-- **Given** 执行类型检查；**When** 运行 `npm run typecheck`；**Then** 前后端 TypeScript 检查通过。
+- **Given** 执行类型检查；**When** 运行 `npm run typecheck`；**Then** 前端 TypeScript 检查通过。
 - **Given** 执行生产构建；**When** 在前端目录运行 `npm run build`；**Then** Vite 构建成功。
 - **Given** 完成前端实现；**When** 进行浏览器截图对比；**Then** 输出原型对比结果，未修复的高保真差异不得进入最终交付。

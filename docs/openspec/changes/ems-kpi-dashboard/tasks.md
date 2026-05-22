@@ -21,16 +21,16 @@
   - [x] 标注 `energy-trend`、`vehicle-energy-per-100km` 中调度前后字段为 EMS 看板扩展字段。
   - [x] 明确 mock envelope `{ code, message, data }` 与真实接口 direct body 的前端兼容策略。
 
-- [ ] **T5: 工程骨架搭建**
+- [ ] **T5: 前端工程骨架搭建**
   - [ ] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。
-  - [ ] 创建 `ems-backend` (Node/Express/TypeScript)。
   - [ ] 创建 `ems-frontend` (Vite/React/TypeScript)。
-  - [ ] 配置 TypeScript、基础脚本、CORS、Swagger、Recharts、Axios 等依赖。
+  - [ ] 配置 TypeScript、基础脚本、Recharts、Axios 或 Fetch 封装等依赖。
+  - [ ] 配置 Vite proxy，将 `/api` 指向 `http://10.105.64.36:20003/api`。
 
-- [ ] **T6: 模拟后端计算逻辑与服务开发**
-  - [ ] 模拟 WI 快照、能耗事实表和车辆时序数据。
-  - [ ] 实现 TEU 换算、能耗、成本、碳排、分时电价和避峰率计算口径。
-  - [ ] 在端口 `20003` 暴露全部 API，并提供 Swagger 页面。
+- [ ] **T6: 前端接口适配与 mock 数据源**
+  - [ ] 实现 `apiClient`，兼容真实接口 direct body 与 mock envelope `{ code, message, data }`。
+  - [ ] 优先接入 `/api/kpi/energy/*` 真实接口。
+  - [ ] 为 common、efficiency、network、dispatch、time-of-use-electricity 和调度前后对比字段提供前端 fixtures。
   - [ ] 对官方文档中 `externalTruck` 当前固定空数组的问题进行 mock 标注。
 
 - [ ] **T7: 前端全局框架与基础组件**
@@ -52,8 +52,8 @@
   - [ ] 修复所有明显偏差：布局漂移、颜色不符、文本溢出、卡片比例失真、图表样式不符、关键模块缺失。
 
 - [ ] **T10: Harness Gate 验证与上传**
-  - [ ] 后端 `npm run typecheck` 通过。
   - [ ] 前端 `npm run typecheck` 通过。
   - [ ] 前端 `npm run build` 通过。
-  - [ ] 启动双端服务并完成运行时烟雾测试。
+  - [ ] 启动前端并完成运行时烟雾测试。
+  - [ ] 验证 `/api/kpi/energy/*` 真实接口可调用；不可调用时前端展示 mock/empty 状态且不阻塞页面。
   - [ ] 完成后将代码、文档、验证结论同步提交至 GitHub。

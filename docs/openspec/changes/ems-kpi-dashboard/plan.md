@@ -4,26 +4,21 @@
 
 ---
 
-## 1. 工程目录结构 (Monorepo Layout)
+## 1. 首期开发范围与工程目录结构
 
 以 GitHub 仓库 `laobinama-blip/EMS-SYSTEM` 的 `main` 分支为唯一基准。开发前应重新 clone/pull 远端仓库，避免复用未确认的本地临时代码。
+
+首期范围调整为**前端-only 开发**：不在本仓库开发生产后端。前端通过 Vite proxy / `apiClient` 调用真实后端接口；真实接口未覆盖的数据使用前端 mock adapter / fixtures 支撑页面高保真展示。
 
 ```
 EMS-SYSTEM/
 ├── openapi.yaml
-├── ems-backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── config/
-│   │   └── server.ts
-│   ├── tsconfig.json
-│   └── package.json
 └── ems-frontend/
     ├── src/
     │   ├── components/
     │   ├── pages/
     │   ├── services/
+    │   ├── mocks/
     │   ├── index.css
     │   ├── App.tsx
     │   └── main.tsx
@@ -51,19 +46,19 @@ EMS-SYSTEM/
 ## 3. API 契约与适配策略
 
 - 能源与碳排官方接口路径必须保留 `/api/kpi/energy/*`。
-- 缺失接口按 `api-gap-analysis.md` 定义补齐 mock 路径，包括 common、efficiency、network、dispatch 和 time-of-use-electricity。
+- 缺失接口按 `api-gap-analysis.md` 定义补齐前端 mock 数据源，包括 common、efficiency、network、dispatch 和 time-of-use-electricity。
 - OpenAPI 需覆盖官方 10 个能源接口和新增 mock/扩展接口；不要写死“11 个接口”。
-- Mock 服务可统一返回 `{ code, message, data }`，但前端 `apiClient` 必须兼容真实服务可能直接返回 body 的情况。
+- 前端 mock 数据可按 `{ code, message, data }` envelope 组织，但 `apiClient` 必须兼容真实服务可能直接返回 body 的情况。
 - `energy-trend` 与 `vehicle-energy-per-100km` 的“调度前/调度后”字段是 EMS 看板扩展字段，必须在 OpenAPI 中标注。
 
 ---
 
-## 4. 后端计算口径与公式
+## 4. 数据计算口径与公式
 
 - TEU 换算：20 英尺 = 1.0 TEU，40 英尺 = 2.0 TEU，45 英尺 = 2.25 TEU，未知默认 1.0 TEU。
-- 成本计算：能耗值乘能源单价，单价配置放在后端 config 中，后续可替换为表配置。
+- 成本计算：能耗值乘能源单价；首期 fixture 固化，后续可替换为真实后端配置。
 - 碳排计算：能耗值乘碳排系数，单位需在 OpenAPI 中明确区分 kgCO2、tCO2。
-- 分时电价：按高峰、平段、低谷时段计算；避峰率和节省金额用于支持原型展示，但首版为 mock/仿真口径。
+- 分时电价：按原型 6 个时间段计算；避峰率和节省金额用于支持原型展示，首期为前端 mock 口径。
 - 外集卡：官方文档说明当前固定空数组，若前端展示原型里的外集卡数值，必须标注为 mock 展示数据。
 
 ---
@@ -82,11 +77,6 @@ EMS-SYSTEM/
 ## 6. 验证命令
 
 ```powershell
-# backend
-cd EMS-SYSTEM\ems-backend
-npm run typecheck
-npm run dev
-
 # frontend
 cd EMS-SYSTEM\ems-frontend
 npm run typecheck
@@ -94,4 +84,4 @@ npm run build
 npm run dev
 ```
 
-后端默认监听 `20003`，前端默认监听 `5173` 并代理 `/api` 到 `20003`。
+前端默认监听 `5173`，并将 `/api` 代理到真实服务 `http://10.105.64.36:20003/api`；真实服务不可访问或接口缺失时，由前端 mock adapter 返回页面所需数据。
