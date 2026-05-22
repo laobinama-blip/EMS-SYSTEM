@@ -1,33 +1,32 @@
 # EMS KPI 看板项目实施计划 (Implementation Plan)
 
-本实施计划规定了 EMS 项目的目录结构、设计规范、计算口径及最终编译验证流程。
+本计划基于 4 张原型图、已上传的能源与碳排接口文档，以及 2026-05-22 复核结论更新。结论：总体方向同意，但必须按本版修正后再进入开发。
 
 ---
 
-## 1. 单体工程目录结构 (Monorepo Layout)
+## 1. 工程目录结构 (Monorepo Layout)
 
-我们将在 [EMS](file:///c:/Antigravity/EMS) 目录下创建前端与后端的独立工作空间：
+以 GitHub 仓库 `laobinama-blip/EMS-SYSTEM` 的 `main` 分支为唯一基准。开发前应重新 clone/pull 远端仓库，避免复用未确认的本地临时代码。
 
 ```
-c:/Antigravity/EMS/
-├── openapi.yaml                 # OpenAPI 3.1.0 接口规范契约
-├── ems-backend/                 # Node.js + Express + TypeScript 模拟后端
+EMS-SYSTEM/
+├── openapi.yaml                 # OpenAPI 3.1.0 接口契约
+├── ems-backend/                 # Node.js + Express + TypeScript mock/API adapter
 │   ├── src/
-│   │   ├── controllers/         # 接口路由控制器
-│   │   ├── services/            # 仿真内存数据库、公式计算与聚合模型
-│   │   ├── config/              # 全局配置 (单价、碳排系数、设备静态列表)
-│   │   └── server.ts            # Express 启动文件与 Swagger 路由
+│   │   ├── controllers/         # 路由控制器
+│   │   ├── services/            # mock 数据、聚合口径、计算公式
+│   │   ├── config/              # 单价、碳排系数、设备枚举、分时电价配置
+│   │   └── server.ts            # Express 启动入口与 Swagger 路由
 │   ├── tsconfig.json
 │   └── package.json
-└── ems-frontend/                # Vite + React + TS 前端看板
-    ├── public/
+└── ems-frontend/                # Vite + React + TypeScript 前端看板
     ├── src/
-    │   ├── components/          # 共享组件 (FilterBar, AppShell, MetricCard)
-    │   ├── pages/               # 四大看板视图 (Efficiency, Network, Dispatch, Energy)
-    │   ├── services/            # Axios API 客户端封装
-    │   ├── index.css            # 全局样式系统、CSS 变量、深色玻璃拟物主题
-    │   ├── App.tsx              # React 路由与页面切换控制
-    │   └── main.tsx             # 应用挂载入口
+    │   ├── components/          # AppShell, FilterBar, MetricCard, charts
+    │   ├── pages/               # Efficiency, Network, Dispatch, Energy
+    │   ├── services/            # apiClient 与接口类型
+    │   ├── index.css            # 原型浅色设计系统
+    │   ├── App.tsx
+    │   └── main.tsx
     ├── tsconfig.json
     └── package.json
 ```
@@ -36,84 +35,61 @@ c:/Antigravity/EMS/
 
 ## 2. 设计系统与视觉规范 (Design System)
 
-为实现高颜值的深色拟物玻璃化 (Glassmorphism) 主题，系统将严格遵循原生 CSS 变量配置：
-- **基础背景色**：`#0b0f19` (深暗黑蓝色)。
-- **卡片/容器背景**：`rgba(17, 24, 39, 0.7)` 配合背景模糊 `backdrop-filter: blur(12px)` 和微透明浅边框 `1px solid rgba(255, 255, 255, 0.08)`。
-- **高亮辅助色 (HSL 渐变)**：
-  - 翡翠绿 (`#10b981` / HSL `160, 84%, 39%`)：代表运行正常或调度后高效率。
-  - 电力蓝 (`#3b82f6` / HSL `220, 90%, 59%`)：基础指标或调度前状态。
-  - 魅惑紫 (`#8b5cf6` / HSL `260, 90%, 65%`)：二级辅助状态。
-  - 温暖黄 (`#f59e0b` / HSL `38, 95%, 50%`)：告警、充电或低电量提示。
-- **字体规范**：通过 Google Fonts 导入 `Inter` 或 `Outfit` 字体，严格区分字体粗细（400 Regular, 500 Medium, 600 Semi-bold），杜绝使用浏览器默认宋体或无衬线黑体。
+原型图是浅色工业 KPI 看板，不采用深色 glassmorphism 主题。实现必须贴近原型：
+
+- **页面背景**：浅灰 `#f1f3f7` / `#f4f6fa`。
+- **顶部栏**：白色、细边框、横向 Tab 导航，选中态为黑色底部粗线。
+- **卡片容器**：白色或近白色背景，8-16px 圆角，浅灰边框，轻阴影，不使用大面积深色毛玻璃。
+- **主色**：调度后/正向使用亮绿色 `#18d88a`，调度前使用中性灰 `#8a8f93`，查询按钮使用亮蓝 `#2fbaf4`，告警使用红色描边和浅红底。
+- **字体**：优先使用系统无衬线字体栈，避免依赖外网 Google Fonts；数字指标使用清晰中等字重。
+- **布局密度**：以 1920px 原型为主要验收视口，移动端只做合理降级，不作为首版核心验收。
 
 ---
 
-## 3. 后端算法计算口径与公式 (Formulas & Logic)
+## 3. API 契约与适配策略
 
-后端服务在模拟 relational/timeseries 数据时，必须统一执行以下计算口径：
-
-### 3.1 TEU 箱量换算
-在 WI 记录中，按箱长折算 TEU 数值：
-- 20 英尺箱 = 1.0 TEU
-- 40 英尺箱 = 2.0 TEU
-- 45 英尺箱 = 2.25 TEU
-- 其余未知情况默认按 1.0 TEU 统计。
-
-### 3.2 能耗成本计算
-$$\text{总成本} = \text{能耗值 (电 kWh 或 柴油 L)} \times \text{对应单价}$$
-- 柴油价格固定为：`7.50 RMB/L`。
-- 电力标准价格固定为：`0.80 RMB/kWh`。
-
-### 3.3 碳排放量计算
-$$\text{碳排放量 (kgCO2)} = \text{能耗值 (电 kWh 或 柴油 L)} \times \text{碳排系数}$$
-- 电力碳排放系数：`0.527 kgCO2/kWh`。
-- 柴油碳排放系数：`2.63 kgCO2/L`。
-
-### 3.4 分时电价 (Time-of-Use Rates) 避峰口径
-在 `time-of-use-electricity` 接口中，电价将按照具体时间段变化：
-- **高峰时段** (`06:00-12:00`、`12:00-18:00`)：`1.20 RMB/kWh`。
-- **平段** (`18:00-22:00`)：`0.80 RMB/kWh`。
-- **低谷时段** (`22:00-24:00`、`00:00-06:00`)：`0.40 RMB/kWh`。
-*调度模拟算法会合理将集卡的充电/作业任务从高峰时段向谷段转移，实现原型展示的 **42% 成本节约和避峰率**。*
+- 能源与碳排官方接口路径必须保留 `/api/kpi/energy/*`。
+- 缺失接口按 `api-gap-analysis.md` 定义补齐 mock 路径，包括 common、efficiency、network、dispatch 和 time-of-use-electricity。
+- OpenAPI 需覆盖官方 10 个能源接口和新增 mock/扩展接口；不要再写死“11 个接口”。
+- Mock 服务可统一返回 `{ code, message, data }`，但前端 `apiClient` 必须兼容真实服务可能直接返回 body 的情况。
+- `energy-trend` 与 `vehicle-energy-per-100km` 的“调度前/调度后”字段是扩展字段，必须在 OpenAPI 中标记为 EMS 看板扩展，不假装官方文档已有。
 
 ---
 
-## 4. 前端核心组件分解 (Component Layout)
+## 4. 后端计算口径与公式
 
-- **`AppShell`**：提供主布局，左上角 Reewell Logo 标志、顶部四大页面 Tab 切换导航、右上角动态告警通知（点击弹出告警明细）及当前用户 Badge。
-- **`FilterBar`**：水平筛选条，包含快捷按钮组（2h, 8h, 1d, 3d, 7d）和自定义双日期选择器、设备下拉多选菜单，以及“查询”和“重置”按钮。
-- **`MetricCard`**：基础指标容器，包含指标标题、主数值、占比色条、同比升降幅百分比箭头，支持玻璃模糊毛玻璃效果。
-- **`RelationshipGraph`**：定制化原生 SVG 画布，基于力导向拓扑关系模型手写绘制 QC、YC、Vehicle、Block 节点，连线支持动态流光特效，点击节点能滑出卡片信息。
-- **`GanttChart`**：二次调度分析专用的水平 Gantt 时间轴，按时间刻度比例渲染不同作业事件的色块块。
-- **`TrendChart`**：对 Recharts `LineChart` 的封装，配置渐变色填充与 HSL 曲线视觉。
-- **`BarCompareChart`**：对 Recharts `BarChart` 的封装，实现双色柱对比效果（调度前 vs 调度后）。
+- TEU 换算：20 英尺 = 1.0 TEU，40 英尺 = 2.0 TEU，45 英尺 = 2.25 TEU，未知默认 1.0 TEU。
+- 成本计算：能耗值乘能源单价，单价配置放在后端 config 中，后续可替换为表配置。
+- 碳排计算：能耗值乘碳排系数，单位需在 OpenAPI 中明确区分 kgCO2、tCO2。
+- 分时电价：按高峰、平段、低谷时段计算；避峰率和节省金额用于支持原型展示，但首版为 mock/仿真口径。
+- 外集卡：官方文档说明当前固定空数组，若前端展示原型里的外集卡数值，必须标注为 mock 展示数据。
 
 ---
 
-## 5. 项目验证命令清单 (Verification Commands)
+## 5. 前端核心组件
 
-我们将在各工作区下运行以下 CLI 命令以验证开发质量：
+- `AppShell`：Reewell 顶部品牌、四页 Tab、告警胶囊、工具按钮和头像。
+- `FilterBar`：2h、8h、1天、3天、7天、自定义日期、设备选择、查询、重置。
+- `MetricCard` / `Panel`：复用白色卡片容器和指标排布。
+- `TrendChart` / `BarCompareChart`：Recharts 封装，支持调度前后双序列。
+- `RelationshipGraph`：原生 SVG 画布，节点悬停/点击反馈，贴近第二张原型。
+- `GanttChart`：调度分析二次事件时间轴，贴近第三张原型。
 
-- **TypeScript 类型检查**：
-  ```powershell
-  # 进入 ems-backend
-  cd C:\Antigravity\EMS\ems-backend
-  npm run typecheck
-  
-  # 进入 ems-frontend
-  cd C:\Antigravity\EMS\ems-frontend
-  npm run typecheck
-  ```
-- **前端生产构建**：
-  ```powershell
-  # 在 ems-frontend 目录下
-  npm run build
-  ```
-- **本地服务联调运行**：
-  ```powershell
-  # 启动后端 (监听端口 20003)
-  npm run dev
-  
-  # 启动前端 (监听端口 5173 并反向代理至 20003)
-  npm run dev
-  ```
+---
+
+## 6. 验证命令
+
+```powershell
+# backend
+cd EMS-SYSTEM\ems-backend
+npm run typecheck
+npm run dev
+
+# frontend
+cd EMS-SYSTEM\ems-frontend
+npm run typecheck
+npm run build
+npm run dev
+```
+
+后端默认监听 `20003`，前端默认监听 `5173` 并代理 `/api` 到 `20003`。
