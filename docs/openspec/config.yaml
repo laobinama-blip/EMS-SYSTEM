@@ -1,0 +1,14 @@
+schema: spec-driven
+context: |
+  EMS KPI dashboard, front-end/back-end separated.
+  Frontend: React + Vite + TypeScript.
+  Backend: Node.js + Express mock/API adapter, replaceable by real services.
+  Reference designs: C:\Users\admin\Desktop\EMS1.png ... EMS4.png.
+  Existing energy API document: C:\Users\admin\Downloads\02_第三页_能源与碳排接口与表结构梳理.md.
+rules:
+  proposal:
+    - Include API gap analysis and rollback plan.
+  specs:
+    - Use Given/When/Then acceptance criteria.
+  quality:
+    - Harness gate requires lint/typecheck/build and browser visual smoke test.
