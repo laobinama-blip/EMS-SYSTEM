@@ -1,47 +1,43 @@
-# EMS Harness Gates
+# EMS 质量门禁指标说明 (Harness Gates)
 
-This document defines the quality gates that must be satisfied during the development of the EMS system.
-
----
-
-## Gate 1: Spec Ready
-- The OpenSpec proposal, spec, plan, tasks, and gap analysis are fully reviewed.
-- The OpenAPI specification (`openapi.yaml`) is finalized at the root level.
-- All missing endpoints are clearly identified and mapped to temporary mock paths.
+本文件规定了在 EMS 系统开发生命周期中必须通过的四个质量门禁 (Gates)，以确保系统具备生产级质量及稳定性。
 
 ---
 
-## Gate 2: Code Quality
-- **TypeScript Verification:**
-  - `npm run typecheck` passes in both the `ems-backend` and `ems-frontend` directories without any compiler errors.
-- **Production Build Validation:**
-  - `npm run build` executes successfully in the `ems-frontend` directory, compiling all pages and dependencies into static distribution bundles without warnings.
-- **Lint Checks:**
-  - Coding standards (no unused imports, proper type annotations, valid React component structures) are enforced.
+## 门禁 1: 规格就绪 (Gate 1: Spec Ready)
+- **要求**：所有的需求设计文档就绪，且接口缺口得到合理定义。
+- **验证项**：
+  1. OpenSpec 建议书 (`proposal.md`)、技术规格书 (`spec.md`)、实施计划 (`plan.md`)、任务跟踪表 (`tasks.md`) 和缺口分析书 (`api-gap-analysis.md`) 均已合并完善。
+  2. 根目录下的 OpenAPI 3.1.0 契约文档 (`openapi.yaml`) 已编写完毕，且覆盖全部 11 个接口。
+  3. 所有缺失接口的临时 mock 路由与路径定义清晰，不与生产接口重名。
 
 ---
 
-## Gate 3: Runtime Smoke Tests
-- **Backend Availability:**
-  - The mock backend starts on port `20003` without crash loops.
-  - The health endpoint `/api/health` returns `{"status":"ok"}`.
-  - Interactive Swagger documentation is accessible at `http://localhost:20003/docs` (or similar endpoint) and displays all schemas correctly.
-- **API Call Correctness:**
-  - The frontend fetches data from the backend using standard Axios requests.
-  - The path calls for energy statistics match the provided spec (`/api/kpi/energy/...`).
+## 门禁 2: 代码质量 (Gate 2: Code Quality)
+- **要求**：代码应无编译期错误，且能够成功进行生产环境打包。
+- **验证项**：
+  1. **TypeScript 验证**：在 `ems-backend` 与 `ems-frontend` 目录下分别运行 `npm run typecheck` 必须完全通过，无任何类型定义错误。
+  2. **生产构建验证**：在 `ems-frontend` 目录下运行 `npm run build` 必须成功，能够输出压缩优化后的静态资源包且无阻塞性警告。
+  3. **静态代码规范**：消除所有未使用的导入 (imports)、多余的控制台日志 (console logs) 和不规范的 TS 隐式类型。
 
 ---
 
-## Gate 4: Visual Smoke Tests
-- **Layout Integrity:**
-  - The application renders correctly in desktop browser dimensions (1920px width).
-  - No blank screens, layout overflows, or severe components overlap occur on navigation.
-- **Tab Swapping Reactivity:**
-  - Switching between tabs ("作业效率", "关系网", "调度分析", "能源与碳排") triggers correct page re-renders.
-- **Energy Page Visual Check:**
-  - The page displays:
-    1. The top header and navigation layout.
-    2. The interactive `FilterBar`.
-    3. The three stacked bars representing single-box statistics.
-    4. Two line charts (energy trend and traditional/green power comparison).
-    5. The time-of-use cost matrix and the vehicle performance list.
+## 门禁 3: 运行时烟雾测试 (Gate 3: Runtime Smoke Tests)
+- **要求**：前端与后端服务可独立且稳定地运行，且各 API 通讯链路畅通。
+- **验证项**：
+  1. **后端可用性**：模拟后端服务能够成功在 `20003` 端口启动，接口 `/api/health` 返回 `{"status":"ok"}`。通过 `http://localhost:20003/docs` 可以访问 Swagger API 交互文档。
+  2. **前端路由与通信**：前端服务在本地开发模式启动，可以通过顶级路由访问，且所有页面状态数据都通过封装的 Axios 客户端拉取。
+  3. **接口调用规范**：对于能源与碳排页面的接口，请求的 URL 路径必须严格与官方文档 `/api/kpi/energy/...` 对齐。
+
+---
+
+## 门禁 4: 界面视觉与交互烟雾测试 (Gate 4: Visual Smoke Tests)
+- **要求**：在标准高分辨率桌面视图下，监控看板无空界面，各图表和交互均具备反馈。
+- **验证项**：
+  1. **布局完整性**：在 1920px 宽的桌面浏览器下检查，无错位、无遮挡、无空白区域，毛玻璃容器阴影正常显现。
+  2. **切导航响应**：频繁点击顶部“作业效率”、“关系网”、“调度分析”、“能源与碳排”四个也签，内容切换顺畅，无 React 崩溃或死循环渲染。
+  3. **能源与碳排页核对点**：
+     - 顶部 `FilterBar` 可选中时间 presets 且查询按钮工作。
+     - “单箱能耗”三组（能耗、成本、碳排）横向柱状图及图例显示正确。
+     - “能耗趋势”和“传统/绿电”折线图正常展示调度前后序列。
+     - “分时电价避峰表”和“单车百公里能耗表”数据无空白、对齐美观。

@@ -1,65 +1,62 @@
-# EMS KPI Dashboard Proposal
+# EMS KPI 看板项目建议书 (Proposal)
 
-## 1. Background
-The goal is to develop a front-end and back-end separated Energy Management System (EMS) dashboard based on four high-fidelity prototype wireframe pages (Operational Efficiency, Relationship Network, Dispatch Analysis, Energy & Carbon Emission). 
-
-Currently, formal backend documentation ([02_第三页_能源与碳排接口与表结构梳理.md](file:///c:/Antigravity/EMS/02_第三页_能源与碳排接口与表结构梳理.md)) covers only the Energy & Carbon page. This proposal outlines the setup of an integrated development framework where the missing components are isolated using an Express API adapter/mock layer, enabling parallel development of the interactive elements and facilitating seamless production integration later.
+## 1. 项目背景
+本项目旨在基于 4 张高保真原型图开发一套前后端分离的能源管理系统 (EMS) 监控看板。当前阶段，正式的后端接口文档仅覆盖第三页（即《02_第三页_能源与碳排接口与表结构梳理.md》）。本建议书规划了整体开发框架，对于缺少的其他页面接口将采用 Express 模拟层 (API adapter/mock) 进行隔离，以便于前端交互的开发，并为后续无缝对接生产环境奠定基础。
 
 ---
 
-## 2. Project Scope
+## 2. 项目范围
 
-### Frontend Dashboard
-- Implement a unified dashboard container (`AppShell`) featuring the Reewell brand header, top tab navigation, notification drawer, and active alert systems (e.g., "QC301 efficiency alert").
-- Implement a global `FilterBar` that manages filter states (2h, 8h, 1d, 3d, 7d, Custom Date Range, and device selection) and triggers component updates on Query/Reset.
-- Implement four interactive dashboard views:
-  1. **作业效率 (Operational Efficiency):** Display statistics cards (TEU, cycles, etc.) and five analytical charts (efficiency, empty rate, crane/bridge rates, etc.).
-  2. **关系网 (Relationship Network):** Create an interactive SVG-based force-directed node-link graph visualizing cranes, vehicles, blocks, and charging stations with real-time assignment visual connections.
-  3. **调度分析 (Dispatch Analysis):** Display algorithm improvement curves, Hymala stability trends, and a horizontal timeline visualizing job execution events.
-  4. **能源与碳排 (Energy and Carbon Emission):** Real-time energy, cost, and carbon breakdown cards, line charts (energy trend, green power ratio), time-of-use cost matrices, and vehicle performance lists.
+### 前端监控看板 (ems-frontend)
+- **统一布局容器 (`AppShell`)**：实现包含 Reewell 品牌头部、顶部页签导航、通知抽屉和实时告警系统（例如“岸桥 QC301 效率告警”）的统一外壳。
+- **全局全局筛选器 (`FilterBar`)**：管理查询时间段状态（支持 2h、8h、1d、3d、7d、自定义日期范围选择及具体设备筛选），在点击“查询”或“重置”时触发组件数据流更新。
+- **四个可交互核心看板页面**：
+  1. **作业效率 (Operational Efficiency)**：展示核心作业指标卡（包括全部作业、装船、卸船、转栈等分组，支持 TEU、自然箱、车辆循环、箱长比例分布）和 5 张图表（平均车辆效率、空驶率、岸桥效率、场桥效率、平均等待时间等调度前后对比）。
+  2. **关系网 (Relationship Network)**：开发一个交互式 SVG 拓扑图，展示并联动岸桥 (QC)、场桥 (YC)、集卡车辆、箱区/区块、船舶、充换电站等节点，以连线和颜色体现任务分配及运行状态。
+  3. **调度分析 (Dispatch Analysis)**：展示算法效率提升曲线、Hymala 世界模型稳定性趋势（成功率、调用量、时延、超时率）以及表示二次调度事件的时间轴甘特图。
+  4. **能源与碳排 (Energy and Carbon Emission)**：展示单箱能耗/成本/碳排指标卡、双曲线能耗趋势、传统电力 vs 绿电对比、分时电价避峰矩阵以及单车百公里能耗分析表。
 
-### Backend Mock Server
-- Set up a Node.js Express server configured with TypeScript that serves all backend endpoints.
-- Align the Energy & Carbon endpoints exactly with the provided documentation paths.
-- Provision simulated REST endpoints under `/api/kpi/efficiency/*`, `/api/kpi/network/*`, and `/api/kpi/dispatch/*` to return realistic operational statistics.
-- Provide a Swagger documentation view for API inspection.
-
----
-
-## 3. Out of Scope
-- Integration with real, active production databases (PostgreSQL or InfluxDB clusters).
-- Deployment of actual dispatch optimization models or Hymala World model code.
-- User authentication, role-based access control, or live webhook alert triggers.
-- Deployment to staging/production cloud servers.
+### 后端模拟服务 (ems-backend)
+- 使用 Node.js + Express + TypeScript 搭建后端接口服务。
+- 能源与碳排页面的接口路径及基本逻辑必须与《02_第三页_能源与碳排接口与表结构梳理.md》完全一致。
+- 针对作业效率、关系网、调度分析等缺失模块，统一设计并提供 `/api/kpi/efficiency/*`、`/api/kpi/network/*`、`/api/kpi/dispatch/*` 等模拟 API，并使用 Swagger 提供接口文档。
 
 ---
 
-## 4. Architectural Decisions
-- **Frontend Stack:** React 19 + TypeScript + Vite + Vanilla CSS. Using CSS custom properties and HSL-based colors to implement a modern, premium glassmorphic dark theme (`#0b0f19`).
-- **Charting Control:** Recharts for premium, responsive charts and SVG elements for the custom force-directed graph.
-- **Backend Stack:** Express + TypeScript + ts-node. In-memory data simulator representing postgres/influx tables, maintaining data relationships and applying formulas.
+## 3. 范围外说明
+- 暂不连接真实的生产 PostgreSQL 数据库或 InfluxDB 时序数据库。
+- 暂不运行真实的调度算法引擎或 Hymala 模型服务。
+- 暂不实现基于 Websocket 的真实实时告警推送及真实的用户认证/权限控制。
+- 暂不进行云端生产环境的正式部署。
 
 ---
 
-## 5. Risks & Mitigation
+## 4. 架构决策
+- **前端技术栈**：React 19 + TypeScript + Vite + Vanilla CSS。完全使用原生 CSS 变量及 HSL 颜色系统构建高颜值的深色玻璃拟物化 (glassmorphism) 主题（背景色 `#0b0f19`）。
+- **图表库**：采用 Recharts 实现响应式图表，并用原生 SVG 实现关系网拓扑图和甘特图事件轴，以保障最高性能和交互自定义。
+- **后端技术栈**：Express + TypeScript + ts-node。内置一个基于内存的数据库状态模拟器，在内存中维护 WI 快照表、能耗事实表等数据，并通过计算公式返回符合逻辑的数据。
 
-| Risk | Impact | Mitigation |
+---
+
+## 5. 风险与缓解措施
+
+| 风险点 | 影响程度 | 缓解措施 |
 | :--- | :--- | :--- |
-| **API Gaps in Documentation** | High | Design mock API models containing the necessary before/after comparison fields and time-of-use tables. |
-| **High Resolution UI Constraints** | Medium | Implement elastic grid layouts and flex components, allowing horizontal scrolling or single-column stack layout on lower desktop widths. |
-| **Interactive Graph Performance** | Medium | Build using optimized React-SVG nodes rather than heavy external canvas libraries to keep load speeds fast. |
+| **文档中存在 API 缺口** | 高 | 自定义设计 mock API 返回结构，补齐调度前后对比、避峰率和分时电价时段等字段。 |
+| **高分辨率 UI 适配限制** | 中 | 采用弹性网格布局 (Flex/Grid Layout) 和容器查询，支持在小尺寸屏幕上优雅降级为单列纵向排列或横向滚动。 |
+| **关系图交互性能问题** | 中 | 采用 React 控制 SVG 渲染，不加载过重的外部 Canvas 框架，保证秒开与流畅缩放。 |
 
 ---
 
-## 6. Rollback Plan
-All changes are self-contained inside the [EMS](file:///c:/Antigravity/EMS) workspace. No modifications are made to external system components. To roll back, simply terminate the node/react local processes and delete the project folder or discard git modifications.
+## 6. 回滚计划
+所有开发文件都保存在当前 `C:\Antigravity\EMS` 目录中。如需回滚，只需在终端终止前端和后端进程，然后清理该工作目录或在 Git 中丢弃修改。
 
 ---
 
-## 7. Acceptance Criteria
-- Top navigation tabs allow switching between the four views without layout shifts.
-- Global filter bar inputs trigger data refetches on click and clear on reset.
-- Chart legends, tooltip states, and hover effects function fluidly.
-- Network graph nodes and edges render correctly with colored status highlights.
-- The Energy & Carbon page consumes APIs matching the official backend specification.
-- `npm run typecheck` and `npm run build` pass without warnings.
+## 7. 验收标准
+- 顶部导航可正常在四个页面间无缝切换，无闪烁或布局移位。
+- 全局筛选条参数在点击“查询”后正确传递并触发数据重新拉取，点击“重置”后可恢复默认。
+- 图表的提示信息 (Tooltip) 和图例 (Legend) 交互流畅。
+- 关系网节点及连线渲染完整，支持悬停高亮和弹窗信息展示。
+- 能源与碳排页面的接口完全对应官方规范文档。
+- `npm run typecheck` 和 `npm run build` 命令执行通过，无 TypeScript 编译错误。

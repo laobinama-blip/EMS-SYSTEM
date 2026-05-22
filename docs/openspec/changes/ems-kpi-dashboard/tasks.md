@@ -1,30 +1,34 @@
-# EMS KPI Dashboard Tasks
+# EMS KPI 看板开发任务清单 (Tasks)
 
-- [x] **T1: Discovery & Analysis**
-  - Read interface document and four prototype wireframes.
-  - Sync docs from the remote Git repository.
-- [x] **T2: Gap & OpenSpec Alignment**
-  - Form page/API coverage matrix and identify critical gaps.
-  - Combine plan, proposal, specs, harness gates, and gap documents with custom design parameters.
-- [ ] **T3: API Specification**
-  - Create the `openapi.yaml` OpenAPI 3.1.0 document.
-- [ ] **T4: Engineering Scaffolding**
-  - Bootstrap Node.js/Express TypeScript backend in `ems-backend`.
-  - Bootstrap Vite/React TypeScript frontend in `ems-frontend`.
-  - Configure package tasks, CORS, Axios, and route structures.
-- [ ] **T5: Mock Backend Implementation**
-  - Write mock data services representing postgres/influx schemas.
-  - Implement formulas for TEU, energy cost, carbon footprint, and time-of-use pricing.
-  - Serve all 11 endpoints with correct schemas.
-- [ ] **T6: Frontend Core & AppShell**
-  - Set up global HSL-based dark theme styling, variables, and typography.
-  - Implement navigation header, global FilterBar, and container widgets.
-- [ ] **T7: Frontend Views & Chart Integrations**
-  - Build **作业效率 (Operational Efficiency)** tab with summary cards and five Recharts views.
-  - Build **关系网 (Relationship Network)** tab with interactive SVG force-directed node-link graph.
-  - Build **调度分析 (Dispatch Analysis)** tab with algorithm comparison, Hymala stability, and timeline Gantt events.
-  - Build **能源与碳排 (Energy and Carbon)** tab with single-box stacked bars, trend lines, time-of-use grid, and vehicle table.
-- [ ] **T8: Verification & Harness Check**
-  - Execute compilation and type checks (`npm run typecheck` / `npm run build`).
-  - Run smoke tests in local browser to verify pages, filters, and tooltips.
-  - Push documentation updates back to Git repository.
+- [x] **T1: 原型与接口文档调研分析**
+  - [x] 阅读并分析四张高保真设计图纸。
+  - [x] 深度解析《02_第三页_能源与碳排接口与表结构梳理.md》文档，掌握表结构、字段含义与计算公式。
+- [x] **T2: 缺口分析与规格合并规范**
+  - [x] 制定页面与 API 接口对应矩阵，明确缺失接口（作业效率、关系网、调度分析等页面的全部接口）。
+  - [x] 结合英文版技术设计，完成中文版 Proposal, Spec, Plan, Harness Gates 等规格文档的编写与合并。
+  - [x] 将所有合并文档提交并上传（Push）至 GitHub 远端仓库。
+- [ ] **T3: API 契约与标准设计**
+  - [ ] 在项目根目录下编写 OpenAPI 3.1.0 接口规范契约 `openapi.yaml`。
+- [ ] **T4: 工程骨架搭建**
+  - [ ] 在工作空间下创建 `ems-backend` (Node/Express/TypeScript)。
+  - [ ] 在工作空间下创建 `ems-frontend` (Vite/React/TypeScript)。
+  - [ ] 在各自工作区下配置 TypeScript 选项、基础脚本、安装必要的依赖包 (Recharts, Axios 等) 以及跨域 (CORS) 策略。
+- [ ] **T5: 模拟后端计算逻辑与服务开发**
+  - [ ] 实现内存中对 PostgreSQLWI 快照数据和时序数据的模拟。
+  - [ ] 编写能耗转换逻辑（TEU 换算、柴油与电力消耗仿真量）。
+  - [ ] 编写成本与碳排放折算公式（包含高峰、平段、谷段分时电价避峰机制）。
+  - [ ] 启动后端服务，在端口 `20003` 暴露全部 11 个 API，并生成 Swagger 界面。
+- [ ] **T6: 前端全局框架与基础组件**
+  - [ ] 编写 `index.css`，配置原生 CSS 变量，定制深色玻璃拟物主题视觉系统。
+  - [ ] 编写 `AppShell` 侧导航/顶导航，集成全局通知与警报气泡卡片。
+  - [ ] 编写全局 `FilterBar` 筛选条，支持各种快捷时段、日期选择器及联动更新机制。
+- [ ] **T7: 前端各监控看板视图开发**
+  - [ ] 开发 **作业效率 (Operational Efficiency)** 视图：4 组大卡片与 5 张 Recharts 调度对比折线/柱图。
+  - [ ] 开发 **关系网 (Relationship Network)** 视图：用 React 渲染原生 SVG 力导向拓扑关系网，节点支持悬停放大及属性侧边栏滑出。
+  - [ ] 开发 **调度分析 (Dispatch Analysis)** 视图：算法效率增幅折线图、Hymala 稳定性曲线及横向事件甘特图。
+  - [ ] 开发 **能源与碳排 (Energy and Carbon)** 视图：单箱三组图、双线总趋势图、避峰表格与百公里能耗分析表。
+- [ ] **T8: 编译打包与运行时验证 (Harness Gate Checks)**
+  - [ ] 运行 `npm run typecheck` 进行前后端静态类型检查，消除一切警告与错误。
+  - [ ] 运行 `npm run build` 打包前端，确认构建产物正确。
+  - [ ] 启动双端服务，进行高保真分辨率 (1920px) 视觉烟雾测试，核对各项交互、Tooltip 以及过滤刷新功能。
+  - [ ] 完成后将全部代码与文档同步提交至 Git 仓库。

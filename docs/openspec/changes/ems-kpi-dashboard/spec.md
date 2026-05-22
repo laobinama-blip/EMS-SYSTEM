@@ -1,102 +1,102 @@
-# EMS KPI Dashboard Specification
+# EMS KPI 看板技术规格说明书 (Specification)
 
-## Requirement 1: Application Architecture
-The system MUST run as a decoupled client-server architecture with a React-based frontend and a Node.js Express backend.
+## 需求 1: 应用程序架构 (Application Architecture)
+系统 MUST (必须) 以 React 前端与 Node.js Express 后端完全解耦的前后端分离架构运行。
 
-### Acceptance Criteria
-- **Given** the backend mock service is running
-- **When** the frontend initiates page load or filter requests
-- **Then** all statistics and series must be retrieved from backend HTTP endpoints (under `/api/kpi/*`) rather than hardcoded in React state.
-- **Given** the application shell is rendered
-- **When** a user clicks on tabs in the top navigation
-- **Then** the page view switches and the navigation selection state updates with a smooth hover/focus indicator.
-
----
-
-## Requirement 2: Global Filtering Bar
-The dashboard MUST feature a unified filtering system managing query durations and device profiles.
-
-### Acceptance Criteria
-- **Given** the global `FilterBar` is mounted
-- **When** a user selects a duration preset (2h, 8h, 1d, 3d, 7d) or custom calendar dates, and clicks the `Query` button
-- **Then** the active view reloads data from the backend applying the selected time boundaries, maintaining the selected filter state.
-- **Given** filters are applied (e.g. custom date range or a specific device)
-- **When** the user clicks the `Reset` button
-- **Then** the time filter reverts to the default `1d` preset, date selectors clear, device selection returns to `全部` (All), and the page reloads default values.
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：后端模拟服务已启动。
+- **When (当)**：前端首次加载页面或点击筛选按钮。
+- **Then (则)**：所有统计数据、图表双序列数据必须通过真实的 HTTP 请求拉取（请求前缀 `/api/kpi/*`），禁止在前端 React 组件内部硬编码静态展示数据。
+- **Given (前提)**：应用框架外壳组件 (`AppShell`) 已挂载渲染。
+- **When (当)**：用户点击顶部导航栏中的各菜单页签。
+- **Then (则)**：主内容区域必须无缝切换至对应页面，导航条选中状态同步更新，并呈现过渡的高亮微动特效。
 
 ---
 
-## Requirement 3: Operational Efficiency Page (作业效率)
-The dashboard MUST display general operational throughput and efficiency metrics.
+## 需求 2: 全局筛选与重置 (Global Filtering Bar)
+看板顶部 MUST (必须) 提供一个统一的全局筛选条 (`FilterBar`)，用于联动控制查询范围。
 
-### Acceptance Criteria
-- **Given** the user selects the "作业效率" tab
-- **When** the view loads
-- **Then** it must display four operational summary cards (全部作业统计, 装船作业统计, 卸船作业统计, 转栈作业统计) showing TEUs, natural boxes, vehicle cycles, and container length distribution.
-- **Given** the backend returns efficiency charts dataset
-- **When** charts are rendered
-- **Then** the average vehicle efficiency, empty running rate, QC efficiency, YC efficiency, and waiting time charts must show comparative plots representing dispatch effectiveness.
-
----
-
-## Requirement 4: Relationship Network Page (关系网)
-The system MUST render an interactive node-link visualization of dispatch assets.
-
-### Acceptance Criteria
-- **Given** the user selects the "关系网" tab
-- **When** the view loads
-- **Then** the page must render an interactive, responsive SVG force layout graphing operational nodes: Cranes (QC), Yard Cranes (YC), Vehicles (Trucks), Blocks, Ships, and Charging/Swapping Stations.
-- **Given** nodes are displayed
-- **When** a user hovers over a node
-- **Then** the node should scale up, its label should highlight, and a custom tooltip drawer should show detailed asset specs (e.g. current battery, active assignment, node code).
-- **Given** links represent assignments
-- **When** dispatch states change
-- **Then** paths between nodes must render in colors indicating task progress.
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：筛选器加载完毕。
+- **When (当)**：用户点击预设时间范围（2h、8h、1d、3d、7d）或通过日期控件选择自定义区间，并点击“查询”按钮。
+- **Then (则)**：前端向后端重新请求对应时间区间的 KPI 指标，四个页面图表刷新，并维持当前的选中按钮状态。
+- **Given (前提)**：用户已应用了非默认时间范围或指定了特定的设备。
+- **When (当)**：用户点击“重置”按钮。
+- **Then (则)**：时间段默认回退到 `1d`，日期选择输入框清空，设备下拉列表重置为“全部设备 (ALL)”，页面自动以默认参数重载初始数据。
 
 ---
 
-## Requirement 5: Dispatch Analysis Page (调度分析)
-The system MUST display statistical indicators of dispatch algorithm operations.
+## 需求 3: 作业效率页 (Operational Efficiency)
+系统 MUST (必须) 呈现作业吞吐指标、设备在线状态以及 5 组用以分析调度效果的趋势/柱状图表。
 
-### Acceptance Criteria
-- **Given** the user selects the "调度分析" tab
-- **When** the view loads
-- **Then** the page must display:
-  - An algorithm efficiency improvement comparison line chart.
-  - A Hymala world model stability line chart plotting success rate, request volume, latency, and timeouts.
-  - A horizontal Gantt-like timeline visualizing dispatch event sequences (二次调度分析).
-- **Given** the horizontal event timeline is rendered
-- **When** events are positioned on the time axis
-- **Then** each block should display details like task name (e.g., 耳轴换介, 重选退出), execution status, and click events to inspect event properties.
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：用户点击“作业效率”导航页签。
+- **When (当)**：页面加载完成。
+- **Then (则)**：顶部应显示四组指标卡片（全部作业统计、装船作业统计、卸船作业统计、转栈作业统计），展示 TEU 箱量、自然箱数、集卡循环次数及 20/40/45 尺箱量占比。
+- **Given (前提)**：后端接口返回了双序列时序数据。
+- **When (当)**：效率分析图表渲染时。
+- **Then (则)**：车辆平均作业效率、空驶率、岸桥效率、场桥效率以及集卡在桥下平均等待时间这 5 张图表均必须显示调度前 (Before Dispatch) 与调度后 (After Dispatch) 的双柱/双线对比。
 
 ---
 
-## Requirement 6: Energy & Carbon Emission Page (能源与碳排)
-The dashboard MUST display detailed energy consumption metrics, complying with the spec paths defined in the backend API documentation.
+## 4. 需求 4: 关系网拓扑页 (Relationship Network)
+系统 MUST (必须) 实现一个用于展示调度资源实时链路和状态的原生 SVG 力导向拓扑关系图。
 
-### Acceptance Criteria
-- **Given** the backend serves `/api/kpi/energy/single-box-energy-statistics`
-- **When** the Energy page loads
-- **Then** the "单箱能耗" component must display a stacked bar breakdown with segments for QC, 水平运输, YC, and 外集卡, showing percentages for 柴油, 火力, and 绿电.
-- **Given** the backend serves `/api/kpi/energy/time-of-use-electricity`
-- **When** the view loads
-- **Then** the page must display the electricity load shifting cards (调度前, 调度后, 节省金额, 避峰率) and a detailed interval table comparison.
-- **Given** the backend serves `/api/kpi/energy/energy-trend`
-- **When** the view loads
-- **Then** the line chart must plot two separate series: before dispatch energy and after dispatch energy.
-- **Given** the backend serves `/api/kpi/energy/vehicle-energy-per-100km`
-- **When** the view loads
-- **Then** the performance table must show a tabular comparison of vehicle energy, cost, and carbon emissions before vs. after dispatch.
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：用户进入“关系网”页面。
+- **When (当)**：网络组件载入。
+- **Then (则)**：画布上必须准确渲染出六类资源节点：岸桥 (QC)、场桥 (YC)、集卡车辆 (Vehicle)、箱区/区块 (Block)、船舶 (Ship) 以及充换电站 (Charging/Swapping Station)，并通过线段连接体现物理与逻辑从属关系。
+- **Given (前提)**：拓扑节点处于正常渲染状态。
+- **When (当)**：用户将鼠标悬停在某个节点上时。
+- **Then (则)**：该节点必须执行微放大动画，高亮该节点名，并滑出气泡浮窗展示详细信息（如当前电量、作业 WI 编号、节点编码等）。
+- **Given (前提)**：各节点连线代表调度状态。
+- **When (当)**：作业任务状态变更。
+- **Then (则)**：连接线应以对应的状态色（如绿、蓝、黄）展示，支持流光特效代表数据/物流流动。
 
 ---
 
-## Requirement 7: Quality Verification Gates
-The project codebase MUST include commands to run automated compilation and validation.
+## 需求 5: 调度分析页 (Dispatch Analysis)
+系统 MUST (必须) 展示调度算法的优化成效、Hymala 世界模型运作健康度以及任务流执行的二次调度时间轴。
 
-### Acceptance Criteria
-- **Given** developers run verification commands
-- **When** executing `npm run typecheck`
-- **Then** all files must pass TypeScript compilation without errors.
-- **Given** frontend project compilation is requested
-- **When** running `npm run build`
-- **Then** the Vite compiler must generate optimized production files in the `/dist` directory.
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：用户进入“调度分析”页。
+- **When (当)**：视图初始化。
+- **Then (则)**：页面必须包含三块核心内容：
+  1. 算法带来的效率提升对比折线图。
+  2. Hymala 模型稳定性指标（成功率、请求次数、时延与超时率）综合线图。
+  3. 二次调度分析甘特时间轴图。
+- **Given (前提)**：横向甘特时间轴渲染完成。
+- **When (当)**：各调度事件（例如：耳轴换介、重选退出、等待复位）依时间顺序排布。
+- **Then (则)**：每个事件块应正确定位，并直观显示其时长，支持点击块弹窗查看具体的调度冲突成因及修正结果。
+
+---
+
+## 需求 6: 能源与碳排页 (Energy & Carbon Emission)
+系统 MUST (必须) 与官方接口文档的路径对齐，并完美呈现能耗结构、避峰率和百公里分析。
+
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：后端启动并暴露 `/api/kpi/energy/single-box-energy-statistics` 接口。
+- **When (当)**：能源页初始化加载。
+- **Then (则)**：单箱能耗组件必须正确渲染四段式水平百分比图（QC、水平运输、YC、外集卡），并显示柴油、火力发电、绿电的百分比。
+- **Given (前提)**：后端返回 `/api/kpi/energy/time-of-use-electricity` 接口数据。
+- **When (当)**：分时电价分析组件加载。
+- **Then (则)**：指标区必须显示“调度前电费”、“调度后电费”、“节省金额”以及“避峰率 (42%)”，时段列表必须显示 6 个分时时段的电量及电费对比。
+- **Given (前提)**：后端返回 `/api/kpi/energy/energy-trend` 接口数据。
+- **When (当)**：总能耗趋势图表加载。
+- **Then (则)**：图表必须能够显示两条折线，分别为调度前与调度后的能耗走势。
+- **Given (前提)**：后端返回 `/api/kpi/energy/vehicle-energy-per-100km` 接口数据。
+- **When (当)**：百公里能耗表渲染。
+- **Then (则)**：表格必须逐行渲染每辆集卡在调度前 vs 调度后的百公里能耗、百公里成本、百公里碳排放量。
+
+---
+
+## 需求 7: 质量门禁与验证 (Quality Verification Gates)
+项目工程 MUST (必须) 包含可靠的类型检查与生产环境构建脚本，供自动化验证。
+
+### 验收标准 (Acceptance Criteria)
+- **Given (前提)**：开发者在前端或后端根目录执行类型检查。
+- **When (当)**：运行 `npm run typecheck` 时。
+- **Then (则)**：TypeScript 编译器编译通过，无任何类型缺失或隐式 `any` 报错。
+- **Given (前提)**：执行生产环境构建。
+- **When (当)**：在前端目录下运行 `npm run build` 时。
+- **Then (则)**：Vite 正确打包出高度优化的静态文件，无阻碍性警告或报错。
