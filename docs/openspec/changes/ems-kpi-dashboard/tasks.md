@@ -15,11 +15,11 @@
   - [x] 修正工程目录、API 数量、返回结构兼容策略等落地风险。
   - [x] 增补前端高保真设计门禁。
 
-- [ ] **T4: API 契约与标准设计**
-  - [ ] 在仓库根目录编写 `openapi.yaml`。
-  - [ ] 覆盖官方 10 个能源接口和新增 mock/扩展接口。
-  - [ ] 标注 `energy-trend`、`vehicle-energy-per-100km` 中调度前后字段为 EMS 看板扩展字段。
-  - [ ] 明确 mock envelope `{ code, message, data }` 与真实接口 direct body 的前端兼容策略。
+- [x] **T4: API 契约与标准设计**
+  - [x] 在仓库根目录编写 `openapi.yaml`。
+  - [x] 覆盖官方 10 个能源接口和新增 mock/扩展接口。
+  - [x] 标注 `energy-trend`、`vehicle-energy-per-100km` 中调度前后字段为 EMS 看板扩展字段。
+  - [x] 明确 mock envelope `{ code, message, data }` 与真实接口 direct body 的前端兼容策略。
 
 - [ ] **T5: 工程骨架搭建**
   - [ ] 从 GitHub `main` 分支重新 clone/pull，作为唯一开发基准。

@@ -1,0 +1,1129 @@
+openapi: 3.1.0
+info:
+  title: EMS (Energy Management System) KPI 看板接口规范
+  version: 1.0.0
+  description: |
+    本规范定义了 EMS 监控看板系统的前后端交互接口契约。
+    包含 10 个官方能源与碳排分析接口，以及补齐其他三个页面（作业效率、关系网、调度分析）和避峰率计算所需的模拟与扩展接口。
+servers:
+  - url: http://localhost:20003/api
+    description: 本地开发与 Mock 测试服务器
+paths:
+  # ==========================================
+  # 1. 全局与通用接口 (Common Endpoints)
+  # ==========================================
+  /kpi/common/header-status:
+    get:
+      summary: 顶栏状态与告警警示
+      tags:
+        - Common
+      responses:
+        '200':
+          description: 成功返回
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 0
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      alertMessage:
+                        type: string
+                        description: 实时告警通知文字，若无告警则返回 null 或空字串
+                        example: "QC301 效率告警"
+                      notificationCount:
+                        type: integer
+                        description: 消息中心未读数
+                        example: 3
+                      user:
+                        type: object
+                        properties:
+                          username:
+                            type: string
+                            example: "Reewell Operator"
+                          role:
+                            type: string
+                            example: "SYS_ADMIN"
+
+  # ==========================================
+  # 2. 作业效率接口 (Operational Efficiency Endpoints)
+  # ==========================================
+  /kpi/efficiency/work-summary:
+    get:
+      summary: 获取四个汇总分区的作业量汇总数据
+      tags:
+        - Efficiency
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          example: "2026-05-21 00:00:00"
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+          example: "2026-05-21 23:59:59"
+      responses:
+        '200':
+          description: 返回作业吞吐统计，包括 TEU、自然箱、集卡循环以及尺寸比重
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        $ref: '#/components/schemas/EfficiencySummaryGroup'
+                      loading:
+                        $ref: '#/components/schemas/EfficiencySummaryGroup'
+                      unloading:
+                        $ref: '#/components/schemas/EfficiencySummaryGroup'
+                      transfer:
+                        $ref: '#/components/schemas/EfficiencySummaryGroup'
+
+  /kpi/efficiency/summary-cards:
+    get:
+      summary: 作业效率大卡片汇总信息
+      tags:
+        - Efficiency
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "2026-05-21 00:00:00"
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "2026-05-21 23:59:59"
+      responses:
+        '200':
+          description: 返回效率、成本等大指标状态
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      averageCost:
+                        type: number
+                        description: 平均作业成本 (RMB/TEU)
+                        example: 2.47
+                      operationUnitPrice:
+                        type: number
+                        description: 作业单价 (RMB)
+                        example: 12.50
+                      onlineEquipmentCount:
+                        type: integer
+                        description: 在线作业设备数
+                        example: 45
+
+  /kpi/efficiency/charts:
+    get:
+      summary: 作业效率分析图表序列数据 (前/后对比)
+      tags:
+        - Efficiency
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回五个核心对比曲线/柱子所需的多序列时序点
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      vehicleEfficiency:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompareTimePoint'
+                      emptyRunningRate:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompareTimePoint'
+                      qcEfficiency:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompareTimePoint'
+                      ycEfficiency:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompareTimePoint'
+                      vehicleWaitingTime:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompareTimePoint'
+
+  # ==========================================
+  # 3. 关系网接口 (Relationship Network Endpoints)
+  # ==========================================
+  /kpi/network/topology:
+    get:
+      summary: 拓扑图节点和连线数据
+      tags:
+        - Network
+      responses:
+        '200':
+          description: 包含桥吊、场桥、集卡、充换电站等物理节点及任务分配关联连线
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      nodes:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/NetworkNode'
+                      edges:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/NetworkEdge'
+
+  # ==========================================
+  # 4. 调度分析接口 (Dispatch Analysis Endpoints)
+  # ==========================================
+  /kpi/dispatch/algorithm-efficiency:
+    get:
+      summary: 算法效率提升分析曲线
+      tags:
+        - Dispatch
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回多组调度算法下的效率指标对比
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        statTime:
+                          type: string
+                        optimalRate:
+                          type: number
+                          description: 算法优化百分比 (%)
+                          example: 18.5
+                        standardRate:
+                          type: number
+                          description: 基准百分比 (%)
+                          example: 10.0
+
+  /kpi/dispatch/hymala-stability:
+    get:
+      summary: Hymala 世界模型稳定性时序及汇总卡片
+      tags:
+        - Dispatch
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 模型执行成功率、响应延时、调用量等时序点
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      kpis:
+                        type: object
+                        properties:
+                          successRate:
+                            type: number
+                            example: 99.8
+                          timeoutCount:
+                            type: integer
+                            example: 2
+                          totalCalls:
+                            type: integer
+                            example: 14502
+                      series:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            statTime:
+                              type: string
+                            successRate:
+                              type: number
+                              example: 99.85
+                            latencyMs:
+                              type: integer
+                              example: 45
+
+  /kpi/dispatch/secondary-events:
+    get:
+      summary: 二次调度事件时间轴列表 (横向甘特图)
+      tags:
+        - Dispatch
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回带有时间刻度的冲突/再指派事件色块
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        eventId:
+                          type: string
+                          example: "EV-091"
+                        eventName:
+                          type: string
+                          description: 调度事件名 (如耳轴换介、等待复位等)
+                          example: "耳轴换介"
+                        deviceCode:
+                          type: string
+                          example: "T102"
+                        startEpoch:
+                          type: integer
+                          description: 发生起点的 unix 时间戳 (秒)
+                          example: 1779416697
+                        durationSeconds:
+                          type: integer
+                          description: 持续时长 (秒)
+                          example: 360
+                        status:
+                          type: string
+                          description: 状态颜色区分 (RESOLVED, PENDING)
+                          example: "RESOLVED"
+                        description:
+                          type: string
+                          example: "前车避让对位失败，触发二次路由重算。"
+
+  # ==========================================
+  # 5. 能源与碳排接口 (Energy & Carbon Endpoints)
+  # ==========================================
+  /kpi/energy/device-types:
+    get:
+      summary: 设备类型下拉列表 (官方接口)
+      tags:
+        - Energy
+      responses:
+        '200':
+          description: 返回静态枚举的设备大类
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum: [VEHICLE, QC, YC]
+                        name:
+                          type: string
+                      example:
+                        code: "VEHICLE"
+                        name: "集卡车辆"
+
+  /kpi/energy/devices:
+    get:
+      summary: 具体设备下拉列表 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: deviceTypeCode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [VEHICLE, QC, YC]
+      responses:
+        '200':
+          description: 设备编码列表，去重WI快照
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceCode:
+                          type: string
+                          example: "T001"
+                        deviceName:
+                          type: string
+                          example: "T001"
+
+  /kpi/energy/single-box-energy-statistics:
+    get:
+      summary: 单箱能耗结构 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 单箱能耗结构，分为桥吊、水平运输、场桥、外集卡四段，按柴油/火电/绿电百分比展示
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      qc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EnergyDetailItem'
+                      horizontalTransport:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EnergyDetailItem'
+                      yc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EnergyDetailItem'
+                      externalTruck:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/EnergyDetailItem'
+                        description: 官方接口返回目前固定为空数组
+
+  /kpi/energy/single-box-energy-cost:
+    get:
+      summary: 单箱综合成本结构 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 返回基于价格配置计算的费用占比细分
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      qc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CostDetailItem'
+                      horizontalTransport:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CostDetailItem'
+                      yc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CostDetailItem'
+                      externalTruck:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CostDetailItem'
+
+  /kpi/energy/carbon-emission-distribution:
+    get:
+      summary: 单箱碳排放结构 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 单箱碳排放分布细分
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      qc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CarbonDetailItem'
+                      horizontalTransport:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CarbonDetailItem'
+                      yc:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CarbonDetailItem'
+                      externalTruck:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CarbonDetailItem'
+
+  /kpi/energy/energy-trend:
+    get:
+      summary: 总能耗趋势图 (官方接口扩展双曲线)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: timeGranularity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, hour]
+        - name: deviceCode
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 能耗趋势，必须具备调度前与调度后对比的数值 (扩展字段)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        statTime:
+                          type: string
+                          example: "2026-05-21 02:00:00"
+                        beforeDispatchEnergy:
+                          type: number
+                          description: 调度前总能耗 (扩展属性)
+                          example: 55.4
+                        afterDispatchEnergy:
+                          type: number
+                          description: 调度后总能耗 (扩展属性)
+                          example: 42.6
+                        totalEnergyConsumption:
+                          type: number
+                          description: 官方接口原始字段，总能耗
+                          example: 42.6
+                        averageEnergyConsumption:
+                          type: number
+                          description: 官方接口原始字段，平均能耗
+                          example: 21.3
+
+  /kpi/energy/energy-ranking:
+    get:
+      summary: 设备能耗排名 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: deviceCode
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 按能耗降序返回设备排名
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceCode:
+                          type: string
+                          example: "T001"
+                        totalEnergyConsumption:
+                          type: number
+                          example: 452.1
+                        averageUsageDuration:
+                          type: number
+                          description: 平均作业时长 (小时)
+                          example: 12.4
+                        greenEnergyRate:
+                          type: number
+                          description: 绿电占比 (%)
+                          example: 35.5
+
+  /kpi/energy/device-energy-ratio:
+    post:
+      summary: 设备能耗类型占比 (官方接口)
+      tags:
+        - Energy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                startTime:
+                  type: string
+                endTime:
+                  type: string
+                deviceTypeCodeList:
+                  type: array
+                  items:
+                    type: string
+                    enum: [VEHICLE, QC, YC]
+      responses:
+        '200':
+          description: 返回各选定类型能耗的比重及明细
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceType:
+                          type: string
+                          example: "VEHICLE"
+                        deviceEnergyRate:
+                          type: number
+                          example: 42.5
+                        deviceEnergyDetails:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              deviceCode:
+                                type: string
+                                example: "T001"
+                              energyType:
+                                type: string
+                                example: "绿电"
+                              energyConsumption:
+                                type: number
+                                example: 124.5
+
+  /kpi/energy/traditional-vs-green-power:
+    get:
+      summary: 传统能源与绿色能源比重趋势 (官方接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: timeGranularity
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 传统能源 vs 绿能的占比走势
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        statTime:
+                          type: string
+                          example: "2026-05-21 00:00:00"
+                        traditionalPower:
+                          type: number
+                          description: 传统能源消耗
+                          example: 120.5
+                        greenPower:
+                          type: number
+                          description: 绿电能源消耗
+                          example: 80.2
+
+  /kpi/energy/time-of-use-electricity:
+    get:
+      summary: 分时电价避峰能耗与成本矩阵 (新增 mock 接口)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 分时段电费比对，用以支持避峰率页面卡片及分时能耗表格展示
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      kpis:
+                        type: object
+                        properties:
+                          beforeDispatchCost:
+                            type: number
+                            description: 调度前总电费 (RMB)
+                            example: 6351.0
+                          afterDispatchCost:
+                            type: number
+                            description: 调度后总电费 (RMB)
+                            example: 5021.0
+                          savingsAmount:
+                            type: number
+                            description: 节省金额 (RMB)
+                            example: 1330.0
+                          averagePricePer100km:
+                            type: number
+                            description: 平均每百公里电费成本 (RMB)
+                            example: 36.4
+                          peakShiftingRate:
+                            type: number
+                            description: 避峰率 (%)
+                            example: 42.0
+                      intervals:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            timeRange:
+                              type: string
+                              description: 分时区间 (如 00:00-02:00 等)
+                              example: "00:00-02:00"
+                            beforeDispatchKwh:
+                              type: number
+                              example: 1112.0
+                            afterDispatchKwh:
+                              type: number
+                              example: 946.0
+                            beforeDispatchCost:
+                              type: number
+                              example: 444.8
+                            afterDispatchCost:
+                              type: number
+                              example: 378.4
+
+  /kpi/energy/vehicle-energy-per-100km:
+    get:
+      summary: 单车百公里能耗分析表 (官方接口扩展前后对比)
+      tags:
+        - Energy
+      parameters:
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: deviceCode
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 每台集卡在调度前与调度后的能耗、成本与碳排对比 (扩展字段)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        deviceCode:
+                          type: string
+                          example: "T001"
+                        # 兼容官方老单字段格式
+                        energyPer100km:
+                          type: number
+                          example: 28.1
+                        cost:
+                          type: number
+                          example: 18.5
+                        carbonEmission:
+                          type: number
+                          example: 14.8
+                        # 扩展的调度前/后多段结构
+                        energy:
+                          type: object
+                          properties:
+                            beforeDispatch:
+                              type: number
+                              example: 32.4
+                            afterDispatch:
+                              type: number
+                              example: 28.1
+                        costComparison:
+                          type: object
+                          properties:
+                            beforeDispatch:
+                              type: number
+                              example: 25.9
+                            afterDispatch:
+                              type: number
+                              example: 18.5
+                        carbonComparison:
+                          type: object
+                          properties:
+                            beforeDispatch:
+                              type: number
+                              example: 17.1
+                            afterDispatch:
+                              type: number
+                              example: 14.8
+
+components:
+  schemas:
+    # 作业汇总区块结构
+    EfficiencySummaryGroup:
+      type: object
+      properties:
+        teu:
+          type: number
+          example: 1420.5
+        naturalBoxes:
+          type: integer
+          example: 980
+        cycles:
+          type: integer
+          example: 1202
+        segments:
+          type: object
+          properties:
+            box20:
+              type: number
+              description: 20尺比例 (%)
+              example: 45.0
+            box40:
+              type: number
+              description: 40尺比例 (%)
+              example: 50.0
+            box45:
+              type: number
+              description: 45尺比例 (%)
+              example: 5.0
+
+    # 调度前/后对比图表坐标点
+    CompareTimePoint:
+      type: object
+      properties:
+        statTime:
+          type: string
+          example: "2026-05-21 08:00:00"
+        beforeDispatchValue:
+          type: number
+          example: 24.5
+        afterDispatchValue:
+          type: number
+          example: 32.2
+
+    # 拓扑节点
+    NetworkNode:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "QC301"
+        label:
+          type: string
+          example: "岸桥 QC301"
+        type:
+          type: string
+          enum: [QC, YC, VEHICLE, BLOCK, SHIP, CHARGING_STATION]
+          example: "QC"
+        status:
+          type: string
+          enum: [ACTIVE, IDLE, ERROR, CHARGING]
+          example: "ACTIVE"
+        battery:
+          type: integer
+          description: 电量 (%), 针对车辆与充换电站有用
+          example: 85
+        activeAssignment:
+          type: string
+          description: 当前活跃指令编号
+          example: "WI-20260522001"
+
+    # 拓扑连线
+    NetworkEdge:
+      type: object
+      properties:
+        source:
+          type: string
+          example: "QC301"
+        target:
+          type: string
+          example: "T101"
+        type:
+          type: string
+          description: 连线含义 (如 ASSIGNED, APPROACHING)
+          example: "ASSIGNED"
+        status:
+          type: string
+          example: "IN_PROGRESS"
+
+    # 单箱能耗明细
+    EnergyDetailItem:
+      type: object
+      properties:
+        energyType:
+          type: string
+          description: 能源名称 (柴油, 火力发电, 绿电)
+          example: "绿电"
+        energyValue:
+          type: number
+          example: 1.25
+        energyUnit:
+          type: string
+          example: "kWh"
+
+    # 单箱能效成本明细
+    CostDetailItem:
+      type: object
+      properties:
+        energyType:
+          type: string
+          example: "绿电"
+        energyValue:
+          type: number
+          example: 1.25
+        unitPrice:
+          type: number
+          example: 0.8
+        energyAmount:
+          type: number
+          example: 1.0
+
+    # 单箱碳排分布明细
+    CarbonDetailItem:
+      type: object
+      properties:
+        energyType:
+          type: string
+          example: "柴油"
+        energyValue:
+          type: number
+          example: 0.85
+        carbonFactor:
+          type: number
+          example: 2.63
+        carbonEmission:
+          type: number
+          example: 2.235
