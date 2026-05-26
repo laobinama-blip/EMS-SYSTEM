@@ -43,13 +43,13 @@ import logoKpiUrl from './assets/reewell-logo-kpi.svg'
 type PageKey = 'efficiency' | 'network' | 'dispatch' | 'energy'
 
 const tabs: Array<{ key: PageKey; label: string; icon: typeof BarChart3 }> = [
-  { key: 'efficiency', label: '运营预测', icon: BarChart3 },
+  { key: 'efficiency', label: '作业效率', icon: BarChart3 },
   { key: 'network', label: '关系网', icon: Network },
   { key: 'dispatch', label: '调度分析', icon: Clock3 },
   { key: 'energy', label: '能源与碳排', icon: Zap },
 ]
 
-const timeOptions = ['2h', '8h', '1天', '3天', '7天', '自定义']
+const timeOptions = ['2h', '8h', '1天', '3 天', '7 天', '自定义']
 
 // ─── Chart Data ───────────────────────────────────────────────────────────────
 const curveData = [
@@ -414,16 +414,30 @@ function ChartCard({ title, unit, badge, action }: { title: string; unit: string
       <PanelTitle icon={<LineChart size={16} />} title={title} badge={badge} action={<DeviceSelect label={action} />} />
       <Legend gray="调度前效率" green="调度后效率" />
       <div className="axis-label">{unit}</div>
-      <ResponsiveContainer width="100%" height={230}>
-        <AreaChart data={curveData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="7 9" vertical={false} stroke="#d5d9de" />
-          <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={{ stroke: '#d8dce2' }} />
-          <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} domain={[0, 60]} />
-          <Tooltip content={<ChartTooltip />} />
-          <Area isAnimationActive={false} type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff', strokeWidth: 1.6 }} />
-          <Line isAnimationActive={false} type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff', strokeWidth: 1.4 }} />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="chart-body">
+        <ResponsiveContainer width="100%" height={230}>
+          <AreaChart data={curveData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="7 9" vertical={false} stroke="#d5d9de" />
+            <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={{ stroke: '#d8dce2' }} />
+            <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} domain={[0, 60]} />
+            <Tooltip content={<ChartTooltip />} />
+            <Area isAnimationActive={false} type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff', strokeWidth: 1.6 }} />
+            <Line isAnimationActive={false} type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff', strokeWidth: 1.4 }} />
+          </AreaChart>
+        </ResponsiveContainer>
+        <div className="chart-static-cursor" />
+        <div className="chart-static-tip">
+          <b>16:00</b>
+          <p><i className="dot gray" />调度前效率：38TEU/h</p>
+          <p><i className="dot green" />调度后效率：34.7TEU/h</p>
+          {(title === '岸桥效率' || title === '场桥效率') && (
+            <>
+              <hr />
+              <p>20箱：200TEU</p><p>40箱：200TEU</p><p>危险品：10TEU</p><p>冷藏箱：10TEU</p>
+            </>
+          )}
+        </div>
+      </div>
     </Panel>
   )
 }
