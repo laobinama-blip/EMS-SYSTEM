@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useEffect, Fragment } from 'react'
+import { type ReactNode, useState, useEffect, Fragment, useRef } from 'react'
 import clsx from 'clsx'
 import {
   AlertTriangle,
@@ -444,18 +444,168 @@ function WaitBarChart() {
 
 // ─── Network Page ──────────────────────────────────────────────────────────────
 function NetworkPage() {
+  const [nodes, setNodes] = useState(() =>
+    topologyNodes.map((n) => ({
+      ...n,
+      vx: 0,
+      vy: 0,
+      origX: n.x,
+      origY: n.y,
+    }))
+  )
   const [selected, setSelected] = useState<string | null>(null)
   const [legend, setLegend] = useState(false)
   const [taskMode, setTaskMode] = useState(false)
-  const nodeMap = new Map(topologyNodes.map((n) => [n.id, n]))
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const svgRef = useRef<SVGSVGElement | null>(null)
+
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]))
 
   // Active set in task mode: highlight QC301, T005, RTG01, ship chain
   const taskHighlight = new Set(['ship', 'qc-d', 't005', 'rtg-d'])
   const activeNode = taskMode ? 'rtg-d' : selected
 
-  // Figma design: nodes have colored circles with white icons
-  // truck=green #19d98f, qc=blue #46bdf2, rtg=purple #887bf3, block=olive #82b640
-  // ship=blue #46bdf2, charge=yellow #f0a43a, swap=cyan #66cad8
+  // Force-directed physics simulation loop
+  useEffect(() => {
+    let animId: number
+    const updatePhysics = () => {
+      setNodes((prevNodes) => {
+        const nextNodes = prevNodes.map((n) => ({ ...n }))
+        const map = new Map(nextNodes.map((n) => [n.id, n]))
+
+        // 1. Attraction force to original position (gentle spring to restore layout)
+        const return_k = 0.04
+        for (const n of nextNodes) {
+          if (n.id === draggedId) continue
+          const dx = n.origX - n.x
+          const dy = n.origY - n.y
+          n.vx += dx * return_k
+          n.vy += dy * return_k
+        }
+
+        // 2. Repulsion force between node pairs
+        const repulsion_dist = 140
+        const repulsion_k = 0.08
+        for (let i = 0; i < nextNodes.length; i++) {
+          const u = nextNodes[i]
+          for (let j = i + 1; j < nextNodes.length; j++) {
+            const v = nextNodes[j]
+            const dx = v.x - u.x
+            const dy = v.y - u.y
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1
+            if (dist < repulsion_dist) {
+              const force = (repulsion_dist - dist) * repulsion_k
+              const fx = (dx / dist) * force
+              const fy = (dy / dist) * force
+              if (u.id !== draggedId) {
+                u.vx -= fx
+                u.vy -= fy
+              }
+              if (v.id !== draggedId) {
+                v.vx += fx
+                v.vy += fy
+              }
+            }
+          }
+        }
+
+        // 3. Spring attraction force along edges
+        const spring_k = 0.05
+        const rest_len = 110
+        for (const [source, target] of topologyEdges) {
+          const u = map.get(source)
+          const v = map.get(target)
+          if (!u || !v) continue
+          const dx = v.x - u.x
+          const dy = v.y - u.y
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1
+          const force = (dist - rest_len) * spring_k
+          const fx = (dx / dist) * force
+          const fy = (dy / dist) * force
+          if (u.id !== draggedId) {
+            u.vx += fx
+            u.vy += fy
+          }
+          if (v.id !== draggedId) {
+            v.vx -= fx
+            v.vy -= fy
+          }
+        }
+
+        // 4. Center gravity force (gentle pull to center of 1220x760)
+        const gravity = 0.0003
+        for (const n of nextNodes) {
+          if (n.id === draggedId) continue
+          const dx = 610 - n.x
+          const dy = 380 - n.y
+          n.vx += dx * gravity
+          n.vy += dy * gravity
+        }
+
+        // 5. Update positions with damping
+        const damping = 0.72
+        for (const n of nextNodes) {
+          if (n.id === draggedId) {
+            n.vx = 0
+            n.vy = 0
+            continue
+          }
+          n.vx *= damping
+          n.vy *= damping
+          n.x += n.vx
+          n.y += n.vy
+
+          // Viewport bounding box constraints
+          n.x = Math.max(45, Math.min(1175, n.x))
+          n.y = Math.max(45, Math.min(715, n.y))
+        }
+
+        return nextNodes
+      })
+
+      animId = requestAnimationFrame(updatePhysics)
+    }
+
+    animId = requestAnimationFrame(updatePhysics)
+    return () => cancelAnimationFrame(animId)
+  }, [draggedId])
+
+  // Mouse drag handler
+  useEffect(() => {
+    if (!draggedId) return
+
+    const getSvgCoords = (e: MouseEvent, svgEl: SVGSVGElement) => {
+      const rect = svgEl.getBoundingClientRect()
+      const x = ((e.clientX - rect.left) / rect.width) * 1220
+      const y = ((e.clientY - rect.top) / rect.height) * 760
+      return { x, y }
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!svgRef.current) return
+      const { x, y } = getSvgCoords(e, svgRef.current)
+      setNodes((prevNodes) =>
+        prevNodes.map((n) => (n.id === draggedId ? { ...n, x, y } : n))
+      )
+    }
+
+    const handleMouseUp = () => {
+      setDraggedId(null)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [draggedId])
+
+  const handleMouseDown = (nodeId: string, e: React.MouseEvent) => {
+    if (e.button !== 0) return // Left click only
+    e.stopPropagation()
+    setDraggedId(nodeId)
+  }
 
   const selectedNodeData = selected ? nodeMap.get(selected) : null
   const detail = selectedNodeData ? (nodeDetails[selectedNodeData.type] ?? nodeDetails.truck) : null
@@ -481,11 +631,13 @@ function NetworkPage() {
         </div>
 
         <svg
+          ref={svgRef}
           className="network-svg"
           viewBox="0 0 1220 760"
           role="img"
           aria-label="关系网拓扑图"
           onClick={() => { if (!taskMode) setSelected(null) }}
+          style={{ cursor: draggedId ? 'grabbing' : 'default' }}
         >
           <defs>
             <pattern id="dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -512,7 +664,7 @@ function NetworkPage() {
           })}
 
           {/* Nodes */}
-          {topologyNodes.map((node) => {
+          {nodes.map((node) => {
             const isFaded = taskMode && !taskHighlight.has(node.id)
             const isSelected = activeNode === node.id
             return (
@@ -525,6 +677,7 @@ function NetworkPage() {
                   e.stopPropagation()
                   if (!taskMode) setSelected(node.id === selected ? null : node.id)
                 }}
+                onMouseDown={(e) => handleMouseDown(node.id, e)}
               />
             )
           })}
@@ -576,11 +729,12 @@ const nodeColors: Record<string, string> = {
 }
 
 function TopologyNode({
-  node, selected, faded, onClick
+  node, selected, faded, onClick, onMouseDown
 }: {
   node: { id: string; label: string; type: string; x: number; y: number }
   selected: boolean; faded: boolean
   onClick: (e: React.MouseEvent) => void
+  onMouseDown: (e: React.MouseEvent) => void
 }) {
   const Icon = node.type === 'truck' ? Car
     : node.type === 'qc' ? Gauge
@@ -596,7 +750,8 @@ function TopologyNode({
       className={clsx('topology-node', node.type, selected && 'selected', faded && 'faded')}
       transform={`translate(${node.x} ${node.y})`}
       onClick={onClick}
-      style={{ cursor: 'pointer' }}
+      onMouseDown={onMouseDown}
+      style={{ cursor: 'grab' }}
     >
       {/* Outer ring when selected */}
       {selected && <circle r="22" fill="none" stroke={fill} strokeWidth="2" opacity="0.4" />}
