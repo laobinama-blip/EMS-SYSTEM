@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import {
   AlertTriangle,
@@ -9,11 +9,12 @@ import {
   Blocks,
   CalendarDays,
   Car,
+  Check,
   ChevronDown,
+  CircleX,
   Clock3,
   Factory,
   Gauge,
-  GitBranch,
   Info,
   LandPlot,
   Leaf,
@@ -24,6 +25,7 @@ import {
   Search,
   Ship,
   SlidersHorizontal,
+  X,
   Zap,
 } from 'lucide-react'
 import {
@@ -32,14 +34,17 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
-  LineChart as ReLineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import './App.css'
+import logoKpiUrl from './assets/reewell-logo-kpi.svg'
 
 type PageKey = 'efficiency' | 'network' | 'dispatch' | 'energy'
 
@@ -53,24 +58,34 @@ const tabs: Array<{ key: PageKey; label: string; icon: typeof BarChart3 }> = [
 const timeOptions = ['2h', '8h', '1天', '3 天', '7 天', '自定义']
 
 const curveData = [
-  { time: '0', before: 36, after: 40, a: 38, b: 66 },
-  { time: '4', before: 25, after: 32, a: 32, b: 58 },
-  { time: '8', before: 23, after: 27, a: 29, b: 51 },
-  { time: '12', before: 29, after: 32, a: 41, b: 73 },
-  { time: '16', before: 40, after: 43, a: 32, b: 57 },
-  { time: '4-26', before: 46, after: 49, a: 45, b: 78 },
-  { time: '4-27', before: 38, after: 42, a: 36, b: 63 },
+  { time: '0', before: 36, after: 40, waitBefore: 38, waitAfter: 67 },
+  { time: '4', before: 25, after: 32, waitBefore: 32, waitAfter: 58 },
+  { time: '8', before: 23, after: 27, waitBefore: 29, waitAfter: 51 },
+  { time: '12', before: 29, after: 32, waitBefore: 41, waitAfter: 73 },
+  { time: '16', before: 40, after: 43, waitBefore: 18, waitAfter: 32 },
+  { time: '4-26', before: 46, after: 49, waitBefore: 44, waitAfter: 57 },
+  { time: '4-27', before: 38, after: 42, waitBefore: 36, waitAfter: 63 },
 ]
 
 const hourlyData = Array.from({ length: 25 }, (_, index) => {
-  const base = 22 + Math.sin(index / 1.7) * 7 + Math.sin(index / 0.9) * 5
+  const before = 24 + Math.sin(index / 0.85) * 6 + Math.sin(index / 2.15) * 5
   return {
     time: `${String(index).padStart(2, '0')}:00`,
-    before: Math.max(10, Math.round(base + (index % 6) * 2)),
-    after: Math.max(28, Math.round(33 + index * 0.45 + Math.sin(index / 1.3) * 3)),
+    before: Math.max(10, Math.round(before)),
+    after: Math.max(29, Math.round(33 + index * 0.45 + Math.sin(index / 1.3) * 3)),
     latency: Math.round(330 + Math.sin(index / 1.2) * 54 + Math.sin(index / 3.5) * 72),
   }
 })
+
+const simpleDailyData = [
+  { time: '00:00', value: 3.2 },
+  { time: '04:00', value: 2.2 },
+  { time: '08:00', value: 2.0 },
+  { time: '12:00', value: 2.2 },
+  { time: '16:00', value: 3.2 },
+  { time: '20:00', value: 4.0 },
+  { time: '24:00', value: 3.7 },
+]
 
 const energyTrend = [
   { time: '00:00', before: 54, after: 50 },
@@ -123,7 +138,7 @@ const energySegments = [
   {
     title: '单箱综合碳排',
     value: '3.285',
-    unit: 'tCO₂/TEu',
+    unit: 'tCO₂/TEU',
     values: ['0.542', '0.642', '0.612', '0.72'],
     widths: [24, 15, 27, 34],
   },
@@ -135,9 +150,9 @@ const segmentColors = ['#bfeeff', '#b8f3db', '#d9c2ff', '#fff0ad']
 const tariffColumns = ['00:00-02:00', '02:00-08:00', '08:00-12:00', '12:00-18:00', '18:00-22:00', '22:00-24:00']
 const tariffRows = [
   { group: '用电量\n(kwh)', label: '调度前', values: ['1,112', '3,688', '3,256', '4,512', '3,256', '1,196'] },
-  { group: '用电量\n(kwh)', label: '调度后', values: ['946↓', '3,120↓', '3,120↓', '3,744↓', '4,400↑', '908↓'] },
+  { group: '用电量\n(kwh)', label: '调度后', values: ['946 ↓', '3,120 ↓', '3,120 ↓', '3,744 ↓', '4,400 ↑', '908 ↓'] },
   { group: '总电量\n(元)', label: '调度前', values: ['311.14', '1,025.66', '1,524.12', '1,951.18', '1,394.74', '285.37'] },
-  { group: '总电量\n(元)', label: '调度后', values: ['120.2↓', '899.2↓', '12,200.2↓', '1,289.2↓', '1,076.20↓', '216.21↓'] },
+  { group: '总电量\n(元)', label: '调度后', values: ['120.2 ↓', '899.2 ↓', '12,200.2 ↓', '1,289.2 ↓', '1,076.20 ↓', '216.21 ↓'] },
 ]
 
 const vehicleRows = ['T001', 'T010', 'T009', 'T002', 'T003'].map((id, index) => ({
@@ -148,38 +163,38 @@ const vehicleRows = ['T001', 'T010', 'T009', 'T002', 'T003'].map((id, index) => 
 }))
 
 const topologyNodes = [
-  { id: 'rtg-a', label: 'RTG01', type: 'rtg', x: 210, y: 285 },
-  { id: 'rtg-b', label: 'RTG02', type: 'rtg', x: 150, y: 520 },
-  { id: 't004', label: 'T004', type: 'truck', x: 360, y: 130 },
-  { id: 't003a', label: 'T003', type: 'truck', x: 345, y: 325 },
-  { id: 'block2', label: 'Block 2', type: 'block', x: 300, y: 410 },
-  { id: 't002', label: 'T002', type: 'truck', x: 285, y: 500 },
-  { id: 't003b', label: 'T003', type: 'truck', x: 245, y: 690 },
-  { id: 'qc-a', label: 'QC301', type: 'qc', x: 425, y: 230 },
-  { id: 'ship', label: '船舶', type: 'ship', x: 520, y: 350 },
-  { id: 'qc-b', label: 'QC301', type: 'qc', x: 415, y: 435 },
-  { id: 'block3a', label: 'Block 3', type: 'block', x: 440, y: 525 },
-  { id: 't001a', label: 'T001', type: 'truck', x: 345, y: 555 },
-  { id: 't008', label: 'T008', type: 'truck', x: 495, y: 490 },
-  { id: 'block1', label: 'Block 1', type: 'block', x: 505, y: 225 },
+  { id: 'rtg-a', label: 'RTG01', type: 'rtg', x: 150, y: 300 },
+  { id: 'rtg-b', label: 'RTG02', type: 'rtg', x: 95, y: 520 },
+  { id: 't004', label: 'T004', type: 'truck', x: 315, y: 145 },
+  { id: 't003a', label: 'T003', type: 'truck', x: 292, y: 335 },
+  { id: 'block2', label: 'Block 2', type: 'block', x: 240, y: 420 },
+  { id: 't002', label: 'T002', type: 'truck', x: 220, y: 500 },
+  { id: 't003b', label: 'T003', type: 'truck', x: 175, y: 690 },
+  { id: 'qc-a', label: 'QC301', type: 'qc', x: 385, y: 230 },
+  { id: 'ship', label: '船舶', type: 'ship', x: 505, y: 350 },
+  { id: 'qc-b', label: 'QC301', type: 'qc', x: 375, y: 430 },
+  { id: 'block3a', label: 'Block 3', type: 'block', x: 410, y: 525 },
+  { id: 't001a', label: 'T001', type: 'truck', x: 295, y: 555 },
+  { id: 't008', label: 'T008', type: 'truck', x: 470, y: 490 },
+  { id: 'block1', label: 'Block 1', type: 'block', x: 485, y: 225 },
   { id: 'rtg-c', label: 'RTG01', type: 'rtg', x: 565, y: 165 },
-  { id: 'qc-c', label: 'QC301', type: 'qc', x: 640, y: 395 },
-  { id: 'qc-d', label: 'QC301', type: 'qc', x: 670, y: 225 },
-  { id: 't007', label: 'T007', type: 'truck', x: 690, y: 480 },
-  { id: 't001b', label: 'T001', type: 'truck', x: 760, y: 150 },
-  { id: 't005', label: 'T005', type: 'truck', x: 775, y: 325 },
-  { id: 't006', label: 'T006', type: 'truck', x: 770, y: 435 },
-  { id: 'block3b', label: 'Block 3', type: 'block', x: 755, y: 570 },
-  { id: 'rtg-d', label: 'RTG01', type: 'rtg', x: 860, y: 390 },
-  { id: 'rtg-e', label: 'RTG01', type: 'rtg', x: 830, y: 635 },
-  { id: 't001c', label: 'T001', type: 'truck', x: 925, y: 500 },
+  { id: 'qc-c', label: 'QC301', type: 'qc', x: 635, y: 395 },
+  { id: 'qc-d', label: 'QC301', type: 'qc', x: 675, y: 225 },
+  { id: 't007', label: 'T007', type: 'truck', x: 705, y: 480 },
+  { id: 't001b', label: 'T001', type: 'truck', x: 735, y: 150 },
+  { id: 't005', label: 'T005', type: 'truck', x: 790, y: 325 },
+  { id: 't006', label: 'T006', type: 'truck', x: 785, y: 435 },
+  { id: 'block3b', label: 'Block 3', type: 'block', x: 765, y: 570 },
+  { id: 'rtg-d', label: 'RTG01', type: 'rtg', x: 880, y: 390 },
+  { id: 'rtg-e', label: 'RTG01', type: 'rtg', x: 835, y: 635 },
+  { id: 't001c', label: 'T001', type: 'truck', x: 925, y: 505 },
   { id: 't001d', label: 'T001', type: 'truck', x: 965, y: 620 },
-  { id: 'swap', label: '换电站', type: 'swap', x: 1115, y: 220 },
-  { id: 'charge', label: '充电桩 01', type: 'charge', x: 1080, y: 690 },
-  { id: 't-r1', label: 'T001', type: 'truck', x: 1005, y: 205 },
-  { id: 't-r2', label: 'T001', type: 'truck', x: 1020, y: 315 },
-  { id: 't-r3', label: 'T001', type: 'truck', x: 1135, y: 375 },
-  { id: 't-r4', label: 'T001', type: 'truck', x: 1080, y: 590 },
+  { id: 'swap', label: '换电站', type: 'swap', x: 1135, y: 220 },
+  { id: 'charge', label: '充电桩 01', type: 'charge', x: 1090, y: 690 },
+  { id: 't-r1', label: 'T001', type: 'truck', x: 1010, y: 205 },
+  { id: 't-r2', label: 'T001', type: 'truck', x: 1025, y: 315 },
+  { id: 't-r3', label: 'T001', type: 'truck', x: 1155, y: 375 },
+  { id: 't-r4', label: 'T001', type: 'truck', x: 1090, y: 590 },
 ]
 
 const topologyEdges = [
@@ -191,10 +206,32 @@ const topologyEdges = [
   ['t-r1', 'swap'], ['t-r2', 'swap'], ['t-r3', 'swap'], ['t-r4', 'charge'],
 ]
 
+const pieData = [
+  { name: '卸船换桥', value: 35, color: '#46bdf2' },
+  { name: '重进重出', value: 25, color: '#887bf3' },
+  { name: '路口拥堵', value: 18, color: '#cf6cf0' },
+  { name: '卸船岸桥任务调序', value: 12, color: '#82b640' },
+  { name: '装船变更场桥', value: 6, color: '#66cad8' },
+  { name: '堆场翻倒', value: 3, color: '#f0a43a' },
+  { name: '船舶配载变更', value: 1, color: '#2f99f2' },
+]
+
 function App() {
-  const [page, setPage] = useState<PageKey>('efficiency')
+  const [page, setPage] = useState<PageKey>(() => {
+    const hash = window.location.hash.replace('#', '') as PageKey
+    return tabs.some((tab) => tab.key === hash) ? hash : 'efficiency'
+  })
   const [range, setRange] = useState('1天')
   const [refreshTick, setRefreshTick] = useState(0)
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as PageKey
+      if (tabs.some((tab) => tab.key === hash)) setPage(hash)
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
 
   const Page = {
     efficiency: EfficiencyPage,
@@ -206,12 +243,12 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">ReeWell World <span /> <em>KPI</em></div>
+        <div className="brand"><img src={logoKpiUrl} alt="ReeWell World KPI" /></div>
         <nav className="tabs" aria-label="主导航">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
-              <button key={tab.key} className={clsx('tab', page === tab.key && 'active')} onClick={() => setPage(tab.key)}>
+              <button key={tab.key} className={clsx('tab', page === tab.key && 'active')} onClick={() => { setPage(tab.key); window.location.hash = tab.key }}>
                 <Icon size={20} strokeWidth={2} />
                 {tab.label}
               </button>
@@ -220,10 +257,10 @@ function App() {
         </nav>
         <div className="top-actions">
           <div className="alert-pill"><AlertTriangle size={16} fill="#ff6262" color="#ff6262" />QC301效率 25.4箱/h，低于阈值30箱/h</div>
-          <button className="round"><Bell size={18} /></button>
-          <button className="round"><Anchor size={18} /></button>
-          <button className="round"><Clock3 size={18} /></button>
-          <div className="avatar" />
+          <button className="round" title="通知"><Bell size={18} /></button>
+          <button className="round" title="港口"><Anchor size={18} /></button>
+          <button className="round" title="时钟"><Clock3 size={18} /></button>
+          <div className="avatar" title="个人账户" />
         </div>
       </header>
       <main>
@@ -253,7 +290,7 @@ function FilterBar({ range, setRange, onRefresh }: { range: string; setRange: (v
           </button>
         ))}
       </div>
-      <div className="date-pill"><CalendarDays size={16} />开始时间 <span>~</span> 结束时间</div>
+      <div className="date-pill"><CalendarDays size={16} />开始时间<span>~</span>结束时间</div>
       <button className={clsx('query', loading && 'loading')} onClick={query}><Search size={16} />查询</button>
       <button className="reset" onClick={() => { setRange('1天'); onRefresh() }}><RotateCcw size={16} />重置</button>
     </section>
@@ -333,7 +370,7 @@ function EfficiencyPage({ refreshTick }: { refreshTick: number }) {
           ]} />
           <h4>单车平均效率</h4>
           <StatStrip compact items={[
-            ['', '8', '循环/小时'], ['', '1', 'TEU/h'], ['', '2,000', '自然盟/小时'], ['', '8', '分(20尺箱)'], ['', '8', '分(40尺箱)'],
+            ['', '8', '循环/小时'], ['', '1', 'TEU/h'], ['', '2,000', '自然箱/小时'], ['', '8', '分(20尺箱)'], ['', '8', '分(40尺箱)'],
           ]} />
         </Panel>
       </div>
@@ -373,14 +410,20 @@ function StatStrip({ items, compact = false }: { items: Array<[string, string, s
 }
 
 function DeviceSelect({ label }: { label: string }) {
-  return <button className="select-pill">{label}<ChevronDown size={15} /></button>
+  const [open, setOpen] = useState(false)
+  return (
+    <span className="select-wrap">
+      <button className="select-pill" onClick={() => setOpen((value) => !value)}>{label}<ChevronDown size={15} /></button>
+      {open && <span className="select-menu"><button>{label}</button><button>QC301</button><button>RTG01</button></span>}
+    </span>
+  )
 }
 
 function ChartCard({ title, unit, badge, action }: { title: string; unit: string; badge: string; action: string }) {
   return (
     <Panel className="chart-panel">
       <PanelTitle icon={<LineChart size={16} />} title={title} badge={badge} action={<DeviceSelect label={action} />} />
-      <div className="chart-legend"><span className="gray-dot">调度前效率</span><span className="green-dot">调度后效率</span></div>
+      <Legend gray="调度前效率" green="调度后效率" />
       <div className="axis-label">{unit}</div>
       <ResponsiveContainer width="100%" height={230}>
         <AreaChart data={curveData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
@@ -388,12 +431,16 @@ function ChartCard({ title, unit, badge, action }: { title: string; unit: string
           <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={{ stroke: '#d8dce2' }} />
           <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} domain={[0, 60]} />
           <Tooltip content={<ChartTooltip />} />
-          <Area type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff', strokeWidth: 1.6 }} />
-          <Line type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff', strokeWidth: 1.4 }} />
+          <Area isAnimationActive={false} type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff', strokeWidth: 1.6 }} />
+          <Line isAnimationActive={false} type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff', strokeWidth: 1.4 }} />
         </AreaChart>
       </ResponsiveContainer>
     </Panel>
   )
+}
+
+function Legend({ gray, green }: { gray: string; green: string }) {
+  return <div className="chart-legend"><span className="gray-dot">{gray}</span><span className="green-dot">{green}</span></div>
 }
 
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
@@ -415,7 +462,7 @@ function WaitBarChart() {
   return (
     <Panel className="chart-panel">
       <PanelTitle icon={<Car size={16} />} title="车辆平均等待时间" badge="平均等待时间 46 秒/循环" action={<DeviceSelect label="全部车辆" />} />
-      <div className="chart-legend"><span className="gray-dot">调度前等待时间</span><span className="green-dot">调度后等待时间</span></div>
+      <Legend gray="调度前等待时间" green="调度后等待时间" />
       <div className="axis-label">秒/循环</div>
       <ResponsiveContainer width="100%" height={230}>
         <BarChart data={curveData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
@@ -423,8 +470,8 @@ function WaitBarChart() {
           <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} />
           <Tooltip content={<ChartTooltip />} />
-          <Bar dataKey="a" fill="#858c8c" radius={[3, 3, 0, 0]} barSize={10} />
-          <Bar dataKey="b" fill="#19d98f" radius={[3, 3, 0, 0]} barSize={10} />
+          <Bar isAnimationActive={false} dataKey="waitBefore" fill="#858c8c" radius={[3, 3, 0, 0]} barSize={10} />
+          <Bar isAnimationActive={false} dataKey="waitAfter" fill="#19d98f" radius={[3, 3, 0, 0]} barSize={10} />
         </BarChart>
       </ResponsiveContainer>
     </Panel>
@@ -432,13 +479,29 @@ function WaitBarChart() {
 }
 
 function NetworkPage() {
-  const [selected, setSelected] = useState<string | null>('ship')
+  const [selected, setSelected] = useState<string | null>(null)
   const [legend, setLegend] = useState(false)
+  const [taskMode, setTaskMode] = useState(false)
   const nodeMap = useMemo(() => new Map(topologyNodes.map((node) => [node.id, node])), [])
+  const activeNode = taskMode ? 'rtg-d' : selected
 
   return (
     <div className="page network-page">
-      <Panel className="network-panel">
+      <Panel className={clsx('network-panel', taskMode && 'task-mode')}>
+        <div className="network-filters">
+          {taskMode ? (
+            <>
+              <button className="tag-filter">RTG <X size={13} /></button>
+              <button className="tag-filter">Task05 <X size={13} /></button>
+            </>
+          ) : (
+            <>
+              <DeviceSelect label="全部设备" />
+              <DeviceSelect label="全部任务" />
+            </>
+          )}
+          <button className="ghost-filter" onClick={() => setTaskMode((value) => !value)}>{taskMode ? '退出任务态' : '任务态'}</button>
+        </div>
         <svg className="network-svg" viewBox="0 0 1220 760" role="img" aria-label="关系网拓扑图">
           <defs>
             <pattern id="dots" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -449,25 +512,37 @@ function NetworkPage() {
           {topologyEdges.map(([source, target], index) => {
             const a = nodeMap.get(source)!
             const b = nodeMap.get(target)!
-            const active = source === selected || target === selected
+            const active = source === activeNode || target === activeNode || (taskMode && ['ship', 'qc-d', 't005', 'rtg-d'].includes(source) && ['ship', 'qc-d', 't005', 'rtg-d'].includes(target))
             return <line key={`${source}-${target}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={clsx('edge', active && 'active', index % 7 === 0 && 'dashed')} />
           })}
-          {topologyNodes.map((node) => <TopologyNode key={node.id} node={node} selected={selected === node.id} onClick={() => setSelected(node.id)} />)}
+          {topologyNodes.map((node) => <TopologyNode key={node.id} node={node} faded={taskMode && !['ship', 'qc-d', 't005', 'rtg-d'].includes(node.id)} selected={activeNode === node.id} onClick={() => setSelected(node.id)} />)}
         </svg>
-        {selected && <div className="node-pop"><b>{nodeMap.get(selected)?.label}</b><span>任务链路正常</span><small>当前效率 34.7 TEU/h</small></div>}
+        {(selected || taskMode) && (
+          <div className="node-pop">
+            <button className="pop-close" onClick={() => { setSelected(null); setTaskMode(false) }}><X size={16} /></button>
+            <h3>RTG01 <span>装箱</span></h3>
+            <dl>
+              <dt>任务信息</dt><dd>Task05</dd>
+              <dt>效率值</dt><dd>26.8TEU/h</dd>
+              <dt>瞬时功率</dt><dd>132kw</dd>
+              <dt>能耗值</dt><dd>72kwh/</dd>
+              <dt>碳排放</dt><dd>0.72tCO₂</dd>
+            </dl>
+          </div>
+        )}
         <button className="legend-button" onClick={() => setLegend((value) => !value)}><Info size={15} />图例 <ChevronDown size={14} /></button>
         {legend && <div className="legend-pop">
-          <span><i className="truck" />车辆</span><span><i className="qc" />岸桥</span><span><i className="rtg" />场桥</span><span><i className="block" />箱区</span>
+          <span><i className="truck" />车辆</span><span><i className="qc" />岸桥/船舶</span><span><i className="rtg" />场桥</span><span><i className="block" />箱区</span>
         </div>}
       </Panel>
     </div>
   )
 }
 
-function TopologyNode({ node, selected, onClick }: { node: { id: string; label: string; type: string; x: number; y: number }; selected: boolean; onClick: () => void }) {
+function TopologyNode({ node, selected, faded, onClick }: { node: { id: string; label: string; type: string; x: number; y: number }; selected: boolean; faded: boolean; onClick: () => void }) {
   const Icon = node.type === 'truck' ? Car : node.type === 'qc' ? Factory : node.type === 'rtg' ? LandPlot : node.type === 'block' ? Blocks : node.type === 'ship' ? Ship : node.type === 'charge' ? Zap : BatteryCharging
   return (
-    <g className={clsx('topology-node', node.type, selected && 'selected')} transform={`translate(${node.x} ${node.y})`} onClick={onClick}>
+    <g className={clsx('topology-node', node.type, selected && 'selected', faded && 'faded')} transform={`translate(${node.x} ${node.y})`} onClick={onClick}>
       <circle r="15" />
       <Icon x={-8} y={-8} size={16} strokeWidth={2} color="#fff" />
       <text y="34">{node.label}</text>
@@ -478,64 +553,104 @@ function TopologyNode({ node, selected, onClick }: { node: { id: string; label: 
 function DispatchPage() {
   return (
     <div className="page dispatch-page">
-      <Panel className="dispatch-card">
-        <div className="wide-chart">
-          <PanelTitle icon={<SlidersHorizontal size={16} />} title="算法效率提升对比" />
-          <div className="chart-legend"><span className="gray-dot">未使用算法预测结果</span><span className="green-dot">Hymala 优化调度后</span></div>
-          <div className="axis-label">TEU/小时</div>
-          <ResponsiveContainer width="100%" height={230}>
-            <AreaChart data={hourlyData} margin={{ left: -22, right: 0, top: 12, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="8 9" vertical={false} stroke="#d8dce2" />
-              <XAxis dataKey="time" interval={1} tick={{ fontSize: 10, fill: '#7c838c' }} tickLine={false} axisLine={{ stroke: '#d8dce2' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, 60]} />
-              <Tooltip content={<ChartTooltip />} />
-              <Area type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 2.8, fill: '#fff' }} />
-              <Line type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 2.8, fill: '#fff' }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mini-cards">
-          {[
-            ['算法统计', '124', '次', '+8.2%'], ['Hymala', '124', '次', '+12.2%'], ['OR', '124', '次', '+8.2%'], ['混合', '124', '次', '-1%'],
-          ].map(([title, value, unit, delta]) => <div className="analysis-card" key={title}><b>{title}</b><span>调用次数</span><strong>{value} <em>{unit}</em></strong><i className={delta.startsWith('-') ? 'bad' : ''}>{delta}</i><small>效率提升</small></div>)}
-        </div>
+      <Panel className="timeline-panel first">
+        <PanelTitle title="二次调度分析" badge="每色块代表一次调度事件　今日触发 47 次" />
+        <Timeline />
       </Panel>
-      <Panel className="dispatch-card">
-        <div className="wide-chart">
-          <PanelTitle icon={<SlidersHorizontal size={16} />} title="Hymala 世界模型稳定性波动曲线" />
-          <div className="axis-label">响应时间(ms)</div>
-          <ResponsiveContainer width="100%" height={230}>
-            <ReLineChart data={hourlyData} margin={{ left: -22, right: 0, top: 12, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="8 9" vertical={false} stroke="#d8dce2" />
-              <XAxis dataKey="time" interval={1} tick={{ fontSize: 10, fill: '#7c838c' }} tickLine={false} axisLine={{ stroke: '#d8dce2' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, 600]} />
-              <Tooltip content={<LatencyTooltip />} />
-              <Line type="monotone" dataKey="latency" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff' }} />
-            </ReLineChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mini-cards">
-          {[
-            ['接口调用成功率', '99.92', '%', '↑ 0.18%'], ['服务响应时延', '426', 'ms', '↓ 23ms'], ['接口调用总次数', '2,000', '次', '↑ 0.8%'], ['服务超时率', '2', '%', '↓ 0.8%'],
-          ].map(([title, value, unit, delta]) => <div className="service-card" key={title}><span>{title}</span><strong>{value} <em>{unit}</em></strong><small>较昨日 <i className={delta.includes('↓') ? 'down' : ''}>{delta}</i></small></div>)}
-        </div>
-      </Panel>
-      <Panel className="timeline-panel">
-        <PanelTitle icon={<GitBranch size={16} />} title="二次调度分析" badge="每色块代表一次调度事件　今日触发 47 次" />
-        <div className="timeline">
-          <div className="time-axis">{['13:05', '13:10', '13:15', '13:20', '13:25', '13:30', '13:35', '13:40', '13:45', '13:50', '13:55', '14:00', '14:05', '14:10', '14:15', '14:20', '14:25', '14:30', '14:35'].map((item) => <span key={item}>{item}</span>)}</div>
-          <div className="event-row"><b>工况</b><i className="now">13:08</i>{[
-            ['卸船换桥', 10, 8, '#83e9d4'], ['重进重出', 23, 9, '#87d9ee'], ['路口拥堵', 34, 8, '#b8c4ff'], ['卸船岸桥任务调序', 47, 14, '#ffdcb2'], ['装船变更场桥', 63, 12, '#8ce8be'], ['堆场翻倒', 77, 9, '#ffc6b4'], ['船舶配载变更', 91, 11, '#fff29c'],
-          ].map(([label, left, width, color]) => <button key={label} className="event-pill" style={{ left: `${left}%`, width: `${width}%`, background: color }}><span>✓</span>{label}</button>)}</div>
-        </div>
-      </Panel>
+
+      <div className="dispatch-grid">
+        <Panel className="pie-panel">
+          <PanelTitle title="工况类别占比" />
+          <div className="pie-layout">
+            <ResponsiveContainer width="43%" height={250}>
+              <PieChart>
+                <Pie isAnimationActive={false} dataKey="value" data={pieData} outerRadius={90} labelLine={false}>
+                  {pieData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="pie-side">
+              <div className="dispatch-summary"><Metric label="调度次数" value="200" unit="次" /><Metric label="工况类型" value="7" unit="种" /><Metric label="TOP1工况" value="卸船换桥" unit="" /></div>
+              <div className="pie-legend">
+                {pieData.map((item) => <span key={item.name}><i style={{ background: item.color }} />{item.name}<b>{item.value === 35 ? '70次' : item.value === 25 ? '50次' : `${Math.max(2, item.value * 2)}次`}</b><em>{item.value}%</em></span>)}
+              </div>
+            </div>
+          </div>
+        </Panel>
+        <Panel className="small-line-panel">
+          <PanelTitle title="每小时调度频率" />
+          <SimpleBlueChart unit="次" />
+        </Panel>
+      </div>
+
+      <div className="dispatch-grid bottom">
+        <Panel className="dispatch-card compact">
+          <div className="wide-chart">
+            <PanelTitle icon={<SlidersHorizontal size={16} />} title="算法效率提升对比" />
+            <Legend gray="常规调度" green="动态调度" />
+            <div className="axis-label">TEU/小时</div>
+            <ResponsiveContainer width="100%" height={230}>
+              <AreaChart data={hourlyData.filter((_, index) => index % 4 === 0)} margin={{ left: -22, right: 0, top: 12, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="8 9" vertical={false} stroke="#d8dce2" />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#7c838c' }} tickLine={false} axisLine={{ stroke: '#d8dce2' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, 60]} />
+                <Tooltip content={<ChartTooltip />} />
+                <Area isAnimationActive={false} type="monotone" dataKey="after" fill="#19d98f18" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 2.8, fill: '#fff' }} />
+                <Line isAnimationActive={false} type="monotone" dataKey="before" stroke="#2f9bff" strokeWidth={2} dot={{ r: 2.8, fill: '#fff' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mini-cards">
+            {[
+              ['算法统计', '124', '次', '+8.2%'], ['MARL', '124', '次', '+12.2%'], ['OR', '124', '次', '+8.2%'], ['混合', '124', '次', '+15.4%'],
+            ].map(([title, value, unit, delta]) => <div className="analysis-card" key={title}><b>{title}</b><span>调用次数</span><strong>{value} <em>{unit}</em></strong><i>{delta}</i><small>效率提升</small></div>)}
+          </div>
+        </Panel>
+        <Panel className="manual-panel">
+          <PanelTitle title="人工干预调度率" />
+          <div className="manual-summary"><Metric label="当前班次人工干预率" value="12.7" unit="%" /><Metric label="系统推荐调度" value="175" unit="次" /><Metric label="人工覆盖/修改/取消" value="23" unit="次" /></div>
+          <SimpleBlueChart unit="%" />
+        </Panel>
+      </div>
     </div>
   )
 }
 
-function LatencyTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
-  if (!active || !payload?.length) return null
-  return <div className="tooltip-card"><b>{label}</b><p>响应时间：{payload[0].value}ms</p><p>模型状态：稳定</p></div>
+function Timeline() {
+  const events: Array<[string, number, number, string, boolean]> = [
+    ['卸船换桥', 10, 8, '#83e9d4', true],
+    ['重进重出', 23, 9, '#87d9ee', true],
+    ['路口拥堵', 34, 8, '#b8c4ff', true],
+    ['卸船岸桥任务调序', 47, 14, '#ffdcb2', true],
+    ['装船变更场桥', 63, 12, '#8ce8be', true],
+    ['堆场翻倒', 77, 9, '#ffc6b4', false],
+    ['船舶配载变更', 91, 11, '#fff29c', true],
+  ]
+
+  return (
+    <div className="timeline">
+      <div className="time-axis">{['13:05', '13:10', '13:15', '13:20', '13:25', '13:30', '13:35', '13:40', '13:45', '13:50', '13:55', '14:00', '14:05', '14:10', '14:15', '14:20', '14:25', '14:30', '14:35'].map((item) => <span key={item}>{item}</span>)}</div>
+      <div className="event-row"><b>工况</b><i className="now">13:08</i>{events.map(([label, left, width, color, ok]) => <button key={label} className="event-pill" style={{ left: `${left}%`, width: `${width}%`, background: color }}>{ok ? <Check size={15} /> : <CircleX size={15} />}{label}</button>)}</div>
+    </div>
+  )
+}
+
+function SimpleBlueChart({ unit }: { unit: string }) {
+  return (
+    <>
+      <div className="chart-legend blue"><span>调度频次</span></div>
+      <div className="axis-label">{unit}</div>
+      <ResponsiveContainer width="100%" height={210}>
+        <AreaChart data={simpleDailyData} margin={{ left: -22, right: 4, top: 12, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="8 9" vertical={false} stroke="#d8dce2" />
+          <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#7c838c' }} tickLine={false} axisLine={{ stroke: '#d8dce2' }} />
+          <YAxis tick={{ fontSize: 11, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, unit === '%' ? 30 : 5]} />
+          <Tooltip />
+          <Area isAnimationActive={false} type="monotone" dataKey="value" fill="#2f9bff18" stroke="#2f9bff" strokeWidth={2.2} dot={{ r: 3, fill: '#fff', strokeWidth: 2 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </>
+  )
 }
 
 function EnergyPage() {
@@ -581,7 +696,7 @@ function EnergySegment({ segment }: { segment: typeof energySegments[number] }) 
 function EnergyLineChart() {
   return (
     <>
-      <div className="chart-legend"><span className="gray-dot">调度前能耗</span><span className="green-dot">调度后能耗</span></div>
+      <Legend gray="调度前能耗" green="调度后能耗" />
       <div className="axis-label">总能耗（kWh）</div>
       <ResponsiveContainer width="100%" height={230}>
         <AreaChart data={energyTrend} margin={{ left: -22, right: 8, top: 12, bottom: 0 }}>
@@ -589,8 +704,8 @@ function EnergyLineChart() {
           <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#7c838c' }} axisLine={{ stroke: '#d8dce2' }} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, 70]} />
           <Tooltip content={<ChartTooltip />} />
-          <Area type="monotone" dataKey="after" fill="#19d98f16" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff' }} />
-          <Line type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff' }} />
+          <Area isAnimationActive={false} type="monotone" dataKey="after" fill="#19d98f16" stroke="#19d98f" strokeWidth={2.1} dot={{ r: 3, fill: '#fff' }} />
+          <Line isAnimationActive={false} type="monotone" dataKey="before" stroke="#858c8c" strokeWidth={2} dot={{ r: 3, fill: '#fff' }} />
         </AreaChart>
       </ResponsiveContainer>
     </>
