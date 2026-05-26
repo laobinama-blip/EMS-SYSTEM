@@ -250,7 +250,7 @@ table { border-collapse: collapse; width: 100%; }
 .stat-strip.compact .stat-item { flex: 1 1 90px; padding: 6px 10px; }
 .stat-strip.compact .stat-item strong { font-size: 15px; }
 
-.select-wrap { position: relative; display: inline-block; }
+.select-wrap { position: relative; display: inline-block; flex-shrink: 0; }
 .select-pill {
   height: 30px;
   padding: 0 12px;
@@ -263,6 +263,8 @@ table { border-collapse: collapse; width: 100%; }
   gap: 4px;
   background: #fff;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: border-color .15s;
 }
 .select-pill:hover { border-color: var(--blue); }
@@ -336,7 +338,7 @@ table { border-collapse: collapse; width: 100%; }
 .efficiency-page {
   display: grid;
   grid-template-columns: 1fr 320px;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto auto;
   gap: 12px;
   padding: 16px;
   align-items: start;
