@@ -43,13 +43,13 @@ import logoKpiUrl from './assets/reewell-logo-kpi.svg'
 type PageKey = 'efficiency' | 'network' | 'dispatch' | 'energy'
 
 const tabs: Array<{ key: PageKey; label: string; icon: typeof BarChart3 }> = [
-  { key: 'efficiency', label: '作业效率', icon: BarChart3 },
+  { key: 'efficiency', label: '运营预测', icon: BarChart3 },
   { key: 'network', label: '关系网', icon: Network },
   { key: 'dispatch', label: '调度分析', icon: Clock3 },
   { key: 'energy', label: '能源与碳排', icon: Zap },
 ]
 
-const timeOptions = ['2h', '8h', '1天', '3 天', '7 天', '自定义']
+const timeOptions = ['2h', '8h', '1天', '3天', '7天', '自定义']
 
 // ─── Chart Data ───────────────────────────────────────────────────────────────
 const curveData = [
@@ -203,24 +203,26 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src={logoKpiUrl} alt="ReeWell World KPI" /></div>
-        <nav className="tabs" aria-label="主导航">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            return (
-              <button key={tab.key} className={clsx('tab', page === tab.key && 'active')}
-                onClick={() => { setPage(tab.key); window.location.hash = tab.key }}>
-                <Icon size={20} strokeWidth={2} />{tab.label}
-              </button>
-            )
-          })}
-        </nav>
-        <div className="top-actions">
-          <div className="alert-pill"><AlertTriangle size={16} fill="#ff6262" color="#ff6262" />QC301效率 25.4箱/h，低于阈值30箱/h</div>
-          <button className="round" title="通知"><Bell size={18} /></button>
-          <button className="round" title="港口"><Anchor size={18} /></button>
-          <button className="round" title="时钟"><Clock3 size={18} /></button>
-          <div className="avatar" title="个人账户" />
+        <div className="topbar-inner">
+          <div className="brand"><img src={logoKpiUrl} alt="ReeWell World KPI" /></div>
+          <nav className="tabs" aria-label="主导航">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button key={tab.key} className={clsx('tab', page === tab.key && 'active')}
+                  onClick={() => { setPage(tab.key); window.location.hash = tab.key }}>
+                  <Icon size={20} strokeWidth={2} />{tab.label}
+                </button>
+              )
+            })}
+          </nav>
+          <div className="top-actions">
+            <div className="alert-pill"><AlertTriangle size={16} fill="#ff6262" color="#ff6262" />QC301效率 25.4箱/h，低于阈值30箱/h</div>
+            <button className="round" title="通知"><Bell size={18} /></button>
+            <button className="round" title="港口"><Anchor size={18} /></button>
+            <button className="round" title="时钟"><Clock3 size={18} /></button>
+            <div className="avatar" title="个人账户" />
+          </div>
         </div>
       </header>
       <main>
@@ -237,16 +239,18 @@ function FilterBar({ range, setRange, onRefresh }: { range: string; setRange: (v
   function query() { setLoading(true); onRefresh(); window.setTimeout(() => setLoading(false), 320) }
   return (
     <section className="filter-shell">
-      <div className="segment">
-        {timeOptions.map((opt, i) => (
-          <button key={opt} className={clsx(range === opt && 'selected')} onClick={() => setRange(opt)}>
-            {opt}{i < timeOptions.length - 1 && <i />}
-          </button>
-        ))}
+      <div className="filter-shell-inner">
+        <div className="segment">
+          {timeOptions.map((opt, i) => (
+            <button key={opt} className={clsx(range === opt && 'selected')} onClick={() => setRange(opt)}>
+              {opt}{i < timeOptions.length - 1 && <i />}
+            </button>
+          ))}
+        </div>
+        <div className="date-pill"><CalendarDays size={16} />开始时间<span>~</span>结束时间</div>
+        <button className={clsx('query', loading && 'loading')} onClick={query}><Search size={16} />查询</button>
+        <button className="reset" onClick={() => { setRange('1天'); onRefresh() }}><RotateCcw size={16} />重置</button>
       </div>
-      <div className="date-pill"><CalendarDays size={16} />开始时间<span>~</span>结束时间</div>
-      <button className={clsx('query', loading && 'loading')} onClick={query}><Search size={16} />查询</button>
-      <button className="reset" onClick={() => { setRange('1天'); onRefresh() }}><RotateCcw size={16} />重置</button>
     </section>
   )
 }
@@ -327,11 +331,14 @@ function EfficiencyPage({ refreshTick }: { refreshTick: number }) {
         <div className="total-work">
           <PanelTitle icon={<BarChart3 size={16} />} title={workSummary.total.title} />
           <Metric label={workSummary.total.totalLabel} value={workSummary.total.teu} unit="TEU" big />
+          <hr className="divider" />
           <div className="metric-row two">
             <Metric label="自然箱量" value={workSummary.total.natural} unit="箱" />
             <Metric label="车辆循环" value={workSummary.total.loop} unit="循环" />
           </div>
+          <hr className="divider" />
           <BoxSplit values={workSummary.total.boxes} />
+          <hr className="divider" />
           <div className="mini-job-grid">
             <span>装船 <b>4500</b> TEU</span><span>卸船 <b>4800</b> TEU</span>
             <span>转堆 <b>3200</b> TEU</span><span>未知 <b>12,830</b> TEU</span>
