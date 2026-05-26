@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useEffect } from 'react'
+import { type ReactNode, useState, useEffect, Fragment } from 'react'
 import clsx from 'clsx'
 import {
   AlertTriangle,
@@ -537,7 +537,10 @@ function NetworkPage() {
             <h3>{selectedNodeData?.label ?? 'RTG01'} <span>{detail.tag}</span></h3>
             <dl>
               {detail.items.map(([k, v]) => (
-                <><dt key={k}>{k}</dt><dd key={v}>{v}</dd></>
+                <Fragment key={k}>
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </Fragment>
               ))}
             </dl>
           </div>
