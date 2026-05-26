@@ -386,16 +386,15 @@ function EfficiencyPage({ refreshTick }: { refreshTick: number }) {
             ['', '8', '循环/小时'], ['', '1', 'TEU/h'], ['', '2,000', '自然箱/小时'], ['', '8', '分(20尺箱)'], ['', '8', '分(40尺箱)'],
           ]} />
         </Panel>
+        <div className="efficiency-charts">
+          <ChartCard title="岸桥效率" unit="TEU" badge="平均效率 34.7 TEU/h" action="全部岸桥" />
+          <ChartCard title="场桥效率" unit="TEU" badge="平均效率 34.7 TEU/h" action="全部场桥" />
+        </div>
       </div>
 
       <div className="side-charts">
         <ChartCard title="车辆平均效率" unit="圈数/小时" badge="平均效率 34.7 圈数/小时" action="全部车辆" />
         <ChartCard title="车辆平均空驶率" unit="%" badge="平均空驶率 34.7 %" action="全部车辆" />
-      </div>
-
-      <div className="bottom-charts">
-        <ChartCard title="岸桥效率" unit="TEU" badge="平均效率 34.7 TEU/h" action="全部岸桥" />
-        <ChartCard title="场桥效率" unit="TEU" badge="平均效率 34.7 TEU/h" action="全部场桥" />
         <WaitBarChart />
       </div>
     </div>

@@ -338,14 +338,13 @@ table { border-collapse: collapse; width: 100%; }
 .efficiency-page {
   display: grid;
   grid-template-columns: 1fr 320px;
-  grid-template-rows: auto auto auto;
+  grid-template-rows: auto auto;
   gap: 12px;
   padding: 16px;
   align-items: start;
   grid-template-areas:
     "work work"
-    "left side"
-    "bottom bottom";
+    "left side";
 }
 
 .work-panel {
@@ -378,7 +377,7 @@ table { border-collapse: collapse; width: 100%; }
 .equipment-card h4 { font-size: 12px; color: var(--muted); font-weight: 600; margin: 10px 0 4px; }
 
 .side-charts { grid-area: side; display: flex; flex-direction: column; gap: 12px; }
-.bottom-charts { grid-area: bottom; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.efficiency-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .chart-panel { }
 
 /* ─── Network Page ────────────────────────────────────────────────────────────── */
