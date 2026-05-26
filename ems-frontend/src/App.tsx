@@ -62,6 +62,17 @@ const curveData = [
   { time: '4-27', before: 38, after: 42, waitBefore: 36, waitAfter: 63 },
 ]
 
+const waitingTimeData = [
+  { name: '路口一', waitBefore: 34, waitAfter: 63 },
+  { name: '路口二', waitBefore: 29, waitAfter: 54 },
+  { name: '路口三', waitBefore: 25, waitAfter: 47 },
+  { name: '路口四', waitBefore: 37, waitAfter: 68 },
+  { name: '路口五', waitBefore: 15, waitAfter: 28 },
+  { name: '路口六', waitBefore: 29, waitAfter: 53 },
+  { name: '路口七', waitBefore: 40, waitAfter: 74 },
+  { name: '路口八', waitBefore: 32, waitAfter: 58 },
+]
+
 const hourlyData = Array.from({ length: 25 }, (_, i) => ({
   time: `${String(i).padStart(2, '0')}:00`,
   before: Math.max(10, Math.round(24 + Math.sin(i / 0.85) * 6 + Math.sin(i / 2.15) * 5)),
@@ -285,11 +296,16 @@ function BoxSplit({ values }: { values: string[] }) {
 function StatStrip({ items, compact = false }: { items: Array<[string, string, string]>; compact?: boolean }) {
   return (
     <div className={clsx('stat-strip', compact && 'compact')}>
-      {items.map(([label, value, unit], i) => (
-        <div className="stat-item" key={`${label}-${i}`}>
-          <small>{label || '\u00A0'}</small><strong>{value}</strong><span>{unit}</span>
-        </div>
-      ))}
+      {items.map(([label, value, unit], i) => {
+        const hasLabel = !!label;
+        return (
+          <div className={clsx('stat-item', !hasLabel && 'no-label')} key={`${label}-${i}`}>
+            {hasLabel && <small>{label}</small>}
+            <strong>{value}</strong>
+            <span>{unit}</span>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -341,7 +357,7 @@ function EfficiencyPage({ refreshTick }: { refreshTick: number }) {
           <hr className="divider" />
           <div className="mini-job-grid">
             <span>装船 <b>4500</b> TEU</span><span>卸船 <b>4800</b> TEU</span>
-            <span>转堆 <b>3200</b> TEU</span><span>未知 <b>12,830</b> TEU</span>
+            <span>转堆 <b>3200</b> TEU</span><span>未知 <b>330</b> TEU</span>
           </div>
         </div>
         <div className="job-grid">
@@ -353,6 +369,7 @@ function EfficiencyPage({ refreshTick }: { refreshTick: number }) {
                 <Metric label="自然箱量" value={job.natural} unit="箱" />
                 <Metric label="车辆循环" value={job.loop} unit="循环" />
               </div>
+              <hr className="divider" />
               <BoxSplit values={job.boxes} />
             </div>
           ))}
@@ -449,10 +466,10 @@ function WaitBarChart() {
       <Legend gray="调度前等待时间" green="调度后等待时间" />
       <div className="axis-label">秒/循环</div>
       <ResponsiveContainer width="100%" height={230}>
-        <BarChart data={curveData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
+        <BarChart data={waitingTimeData} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
           <CartesianGrid strokeDasharray="7 9" vertical={false} stroke="#d5d9de" />
-          <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={false} />
-          <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={{ stroke: '#d8dce2' }} tickLine={false} />
+          <YAxis tick={{ fontSize: 11, fill: '#8b929a' }} axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} />
           <Tooltip content={<ChartTooltip />} />
           <Bar isAnimationActive={false} dataKey="waitBefore" fill="#858c8c" radius={[3, 3, 0, 0]} barSize={10} />
           <Bar isAnimationActive={false} dataKey="waitAfter" fill="#19d98f" radius={[3, 3, 0, 0]} barSize={10} />

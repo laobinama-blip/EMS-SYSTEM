@@ -328,6 +328,12 @@ table { border-collapse: collapse; width: 100%; }
   border-bottom: 0;
   min-height: 52px;
 }
+.stat-item.no-label {
+  display: flex;
+  align-items: baseline;
+  min-height: 30px;
+  height: 30px;
+}
 .stat-item small {
   grid-area: label;
   font-size: 14px;
@@ -458,42 +464,46 @@ table { border-collapse: collapse; width: 100%; }
   height: 406px;
   padding: 0;
   display: flex;
-  border-radius: 16px;
+  border-radius: 20px;
 }
 
 .total-work {
   width: 452px;
   flex-shrink: 0;
   border-right: 1px solid var(--line-soft);
-  padding: 22px 24px 20px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
+  background: #f7f8fa;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  gap: 12px;
 }
 
 .total-work .divider {
   border: 0;
   border-top: 1px solid var(--line-soft);
-  margin: 12px 0;
+  margin: 0;
 }
 
 .mini-job-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px 22px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 .mini-job-grid span {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   height: 42px;
-  padding: 0 14px;
+  padding: 0 12px;
   background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 1px solid #eef1f6;
+  border-radius: 12px;
   font-size: 14px;
   color: #1f252c;
-  gap: 10px;
+  gap: 12px;
 }
 .mini-job-grid b {
   color: var(--text);
@@ -513,7 +523,7 @@ table { border-collapse: collapse; width: 100%; }
 .job-card {
   width: 574px;
   height: 203px;
-  padding: 22px 24px;
+  padding: 20px 24px;
   border: none;
   border-right: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
@@ -521,14 +531,20 @@ table { border-collapse: collapse; width: 100%; }
   flex-direction: column;
   justify-content: flex-start;
   background: transparent;
+  gap: 12px;
 }
 .job-card .metric-row {
-  margin-top: 12px;
+  margin-top: 0;
+}
+.job-card .divider {
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  margin: 0;
 }
 .job-card .box-split {
-  border-top: 1px solid var(--line-soft);
-  padding-top: 14px;
-  margin-top: 14px;
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
 }
 .total-work .box-split {
   border-top: 0;
@@ -650,8 +666,13 @@ table { border-collapse: collapse; width: 100%; }
 }
 .main-left > .panel:nth-child(1) .stat-item {
   border-bottom: none;
+  padding: 0 16px;
+}
+.main-left > .panel:nth-child(1) .stat-item:nth-child(7n+1) {
+  padding-left: 0;
 }
 .main-left > .panel:nth-child(1) .stat-item:nth-child(7n) {
+  padding-right: 0;
   border-right: none;
 }
 
@@ -660,8 +681,13 @@ table { border-collapse: collapse; width: 100%; }
 }
 .main-left > .panel:nth-child(2) .stat-item {
   border-bottom: none;
+  padding: 0 16px;
+}
+.main-left > .panel:nth-child(2) .stat-item:nth-child(5n+1) {
+  padding-left: 0;
 }
 .main-left > .panel:nth-child(2) .stat-item:nth-child(5n) {
+  padding-right: 0;
   border-right: none;
 }
 
@@ -676,7 +702,14 @@ table { border-collapse: collapse; width: 100%; }
   padding-bottom: 0;
   margin-bottom: 0;
 }
-.equipment-card .stat-strip .stat-item:nth-child(5n) {
+.equipment-card .stat-item {
+  padding: 0 16px;
+}
+.equipment-card .stat-item:nth-child(5n+1) {
+  padding-left: 0;
+}
+.equipment-card .stat-item:nth-child(5n) {
+  padding-right: 0;
   border-right: none;
 }
 .equipment-card .stat-strip:nth-of-type(1) .stat-item:nth-child(n+6) {
@@ -694,8 +727,13 @@ table { border-collapse: collapse; width: 100%; }
 }
 .tariff-panel .stat-item {
   border-bottom: none;
+  padding: 0 16px;
+}
+.tariff-panel .stat-item:nth-child(5n+1) {
+  padding-left: 0;
 }
 .tariff-panel .stat-item:nth-child(5n) {
+  padding-right: 0;
   border-right: none;
 }
 
