@@ -46,7 +46,7 @@ const tabs: Array<{ key: PageKey; label: string; icon: typeof BarChart3 }> = [
   { key: 'efficiency', label: '作业效率', icon: BarChart3 },
   { key: 'network', label: '关系网', icon: Network },
   { key: 'dispatch', label: '调度分析', icon: Clock3 },
-  { key: 'energy', label: '能源与碳排', icon: Zap },
+  { key: 'energy', label: '能源与碳排', icon: Leaf },
 ]
 
 const timeOptions = ['2h', '8h', '1天', '3 天', '7 天', '自定义']
@@ -508,7 +508,6 @@ function NetworkPage() {
     const updatePhysics = () => {
       setNodes((prevNodes) => {
         const nextNodes = prevNodes.map((n) => ({ ...n }))
-        const map = new Map(nextNodes.map((n) => [n.id, n]))
 
         // 1. Attraction force to original position (gentle spring to restore layout)
         const return_k = 0.04
@@ -520,64 +519,7 @@ function NetworkPage() {
           n.vy += dy * return_k
         }
 
-        // 2. Repulsion force between node pairs
-        const repulsion_dist = 140
-        const repulsion_k = 0.08
-        for (let i = 0; i < nextNodes.length; i++) {
-          const u = nextNodes[i]
-          for (let j = i + 1; j < nextNodes.length; j++) {
-            const v = nextNodes[j]
-            const dx = v.x - u.x
-            const dy = v.y - u.y
-            const dist = Math.sqrt(dx * dx + dy * dy) || 1
-            if (dist < repulsion_dist) {
-              const force = (repulsion_dist - dist) * repulsion_k
-              const fx = (dx / dist) * force
-              const fy = (dy / dist) * force
-              if (u.id !== draggedId) {
-                u.vx -= fx
-                u.vy -= fy
-              }
-              if (v.id !== draggedId) {
-                v.vx += fx
-                v.vy += fy
-              }
-            }
-          }
-        }
 
-        // 3. Spring attraction force along edges
-        const spring_k = 0.05
-        const rest_len = 110
-        for (const [source, target] of topologyEdges) {
-          const u = map.get(source)
-          const v = map.get(target)
-          if (!u || !v) continue
-          const dx = v.x - u.x
-          const dy = v.y - u.y
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1
-          const force = (dist - rest_len) * spring_k
-          const fx = (dx / dist) * force
-          const fy = (dy / dist) * force
-          if (u.id !== draggedId) {
-            u.vx += fx
-            u.vy += fy
-          }
-          if (v.id !== draggedId) {
-            v.vx -= fx
-            v.vy -= fy
-          }
-        }
-
-        // 4. Center gravity force (gentle pull to center of 1220x760)
-        const gravity = 0.0003
-        for (const n of nextNodes) {
-          if (n.id === draggedId) continue
-          const dx = 610 - n.x
-          const dy = 380 - n.y
-          n.vx += dx * gravity
-          n.vy += dy * gravity
-        }
 
         // 5. Update positions with damping
         const damping = 0.72
@@ -870,7 +812,7 @@ function DispatchPage() {
                 <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#7c838c' }} tickLine={false} axisLine={{ stroke: '#d8dce2' }} interval={0} />
                 <YAxis tick={{ fontSize: 10, fill: '#7c838c' }} axisLine={false} tickLine={false} domain={[0, 600]} />
                 <Tooltip content={<LatencyTooltip />} />
-                <Area isAnimationActive={false} type="monotone" dataKey="latency" fill="#2f9bff18" stroke="#2f9bff" strokeWidth={2.1} dot={{ r: 2.8, fill: '#fff' }} />
+                <Area isAnimationActive={false} type="monotone" dataKey="latency" fill="#858c8c18" stroke="#858c8c" strokeWidth={2.1} dot={{ r: 2.8, fill: '#fff' }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -38,7 +38,8 @@ table { border-collapse: collapse; width: 100%; }
   padding: 0;
 }
 .topbar-inner {
-  width: calc(100% - 48px);
+  width: 1600px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 286px 1fr 498px;
   align-items: center;
@@ -738,7 +739,11 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 /* ─── Network Page ────────────────────────────────────────────────────────────── */
-.network-page { padding: 16px; }
+.network-page {
+  width: 1600px;
+  margin: 0 auto;
+  padding: 20px 0 34px;
+}
 
 .network-panel {
   position: relative;
@@ -889,7 +894,14 @@ table { border-collapse: collapse; width: 100%; }
 .dot-legend.swap { background: #66cad8; }
 
 /* ─── Dispatch Page ───────────────────────────────────────────────────────────── */
-.dispatch-page { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.dispatch-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 1600px;
+  margin: 0 auto;
+  padding: 20px 0 34px;
+}
 
 .dispatch-row-layout {
   display: grid;
@@ -959,16 +971,18 @@ table { border-collapse: collapse; width: 100%; }
   margin-left: 2px;
 }
 
-.dispatch-info-card .trend-up {
+.dispatch-info-card .card-metric-item .trend-up {
   color: var(--green);
   font-weight: 600;
   font-size: 13px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-.dispatch-info-card .trend-down {
+.dispatch-info-card .card-metric-item .trend-down {
   color: var(--red);
   font-weight: 600;
   font-size: 13px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .timeline-panel { overflow-x: auto; }
@@ -1040,10 +1054,12 @@ table { border-collapse: collapse; width: 100%; }
 /* ─── Energy Page ─────────────────────────────────────────────────────────────── */
 .energy-page {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1060px 520px;
   grid-template-rows: auto auto auto;
-  gap: 12px;
-  padding: 16px;
+  gap: 20px;
+  width: 1600px;
+  margin: 0 auto;
+  padding: 20px 0 34px;
   grid-template-areas:
     "structure chart1"
     "structure chart2"
@@ -1122,8 +1138,14 @@ table { border-collapse: collapse; width: 100%; }
   font-size: 11px;
 }
 .tariff-table th span { display: block; }
-.tariff-table td.up { color: #ef4444; }
-.tariff-table td.down { color: var(--green); }
+.tariff-table td.up {
+  color: #ef4444;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.tariff-table td.down {
+  color: var(--green);
+  font-family: system-ui, -apple-system, sans-serif;
+}
 
 /* ─── Page base ───────────────────────────────────────────────────────────────── */
 .page { min-height: calc(100vh - 108px); }
