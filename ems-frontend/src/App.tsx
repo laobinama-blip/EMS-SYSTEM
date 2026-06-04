@@ -21,6 +21,7 @@ import {
   Network,
   RotateCcw,
   Search,
+  Server,
   Ship,
   X,
   Zap,
@@ -39,14 +40,16 @@ import {
 } from 'recharts'
 import './App.css'
 import logoKpiUrl from './assets/reewell-logo-kpi.svg'
+import { ServerBomPage } from './bom/ServerBomPage'
 
-type PageKey = 'efficiency' | 'network' | 'dispatch' | 'energy'
+type PageKey = 'efficiency' | 'network' | 'dispatch' | 'energy' | 'bom'
 
 const tabs: Array<{ key: PageKey; label: string; icon: typeof BarChart3 }> = [
   { key: 'efficiency', label: '作业效率', icon: BarChart3 },
   { key: 'network', label: '关系网', icon: Network },
   { key: 'dispatch', label: '调度分析', icon: Clock3 },
   { key: 'energy', label: '能源与碳排', icon: Leaf },
+  { key: 'bom', label: 'BOM配置', icon: Server },
 ]
 
 const timeOptions = ['2h', '8h', '1天', '3 天', '7 天', '自定义']
@@ -209,7 +212,7 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHash)
   }, [])
 
-  const Page = { efficiency: EfficiencyPage, network: NetworkPage, dispatch: DispatchPage, energy: EnergyPage }[page]
+  const Page = { efficiency: EfficiencyPage, network: NetworkPage, dispatch: DispatchPage, energy: EnergyPage, bom: ServerBomPage }[page]
 
   return (
     <div className="app">
@@ -237,7 +240,7 @@ function App() {
         </div>
       </header>
       <main>
-        <FilterBar range={range} setRange={setRange} onRefresh={() => setRefreshTick((v) => v + 1)} />
+        {page !== 'bom' && <FilterBar range={range} setRange={setRange} onRefresh={() => setRefreshTick((v) => v + 1)} />}
         <Page refreshTick={refreshTick} />
       </main>
     </div>
